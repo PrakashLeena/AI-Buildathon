@@ -55,7 +55,13 @@ export default async function handler(req, res) {
     res.setHeader('Set-Cookie', buildSessionCookie(sessionCookie));
     return res.status(200).json({ ok: true, email: decoded.email });
   } catch (err) {
-    console.error('[api/admin/session] sign-in failed:', err.message);
+    // err.code (e.g. "auth/argument-error", "auth/project-not-found") is the
+    // most useful bit for diagnosing setup problems - almost always either a
+    // FIREBASE_ADMIN_PROJECT_ID mismatch with the client config, or a
+    // malformed FIREBASE_ADMIN_PRIVATE_KEY (common when copy-pasting into
+    // Vercel's env var UI). Check the deployment's function logs for this
+    // line when troubleshooting a 401 here.
+    console.error('[api/admin/session] sign-in failed:', err.code || '(no code)', '-', err.message);
     return res.status(401).json({ error: 'Sign-in failed. Please try again.' });
   }
 }

@@ -27,6 +27,17 @@ const nextConfig = {
       {
         source: '/api/registrations/:path*',
         headers: corsHeaders()
+      },
+      {
+        // Firebase's signInWithPopup() polls `popup.closed` on the Google
+        // sign-in popup window to detect when it's dismissed. Vercel (and
+        // some browsers by default) apply a strict Cross-Origin-Opener-Policy
+        // that blocks that check across the popup boundary, breaking the
+        // sign-in flow. `same-origin-allow-popups` keeps the isolation
+        // benefits for same-origin content while explicitly allowing this
+        // interaction with popups we open ourselves.
+        source: '/admin/:path*',
+        headers: [{ key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' }]
       }
     ];
   }

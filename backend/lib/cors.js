@@ -1,7 +1,11 @@
 // Small CORS helper shared by every API route. The frontend is a separate
 // app (different origin in production), so each response needs explicit
 // CORS headers and OPTIONS preflight requests must be answered directly.
-const ALLOWED_ORIGIN = process.env.FRONTEND_ORIGIN || '*';
+//
+// Origins never include a trailing slash (e.g. "https://example.com", not
+// "https://example.com/"). Strip one if present so a misconfigured env var
+// doesn't silently break CORS by not matching the browser's Origin header.
+const ALLOWED_ORIGIN = (process.env.FRONTEND_ORIGIN || '*').replace(/\/+$/, '');
 
 export function applyCors(req, res) {
   res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);

@@ -3,7 +3,12 @@
 // credentials. In dev, Vite proxies `/api/*` to the backend (see
 // vite.config.js); in production set VITE_API_BASE_URL to the deployed
 // backend origin (e.g. https://api.yourdomain.com/api).
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+// Strip any trailing slash so `${API_BASE_URL}${path}` never produces a
+// double slash (e.g. ".../api//registrations"), which Vercel/most hosts
+// will redirect - and browsers refuse to follow a redirect on a CORS
+// preflight (OPTIONS) request, causing a confusing CORS error instead of
+// the real cause.
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '');
 
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE_URL}${path}`, {

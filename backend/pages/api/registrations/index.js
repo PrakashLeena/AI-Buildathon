@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { applyCors } from '../../../lib/cors.js';
-import { isSupabaseConfigured, supabaseAdmin } from '../../../lib/supabaseAdmin.js';
+import { isSupabaseConfigured, supabaseAdmin, supabaseConfigError } from '../../../lib/supabaseAdmin.js';
 import { validateRegistration } from '../../../lib/validateRegistration.js';
 
 // Generates a random password for the Supabase Auth user created on behalf
@@ -30,7 +30,8 @@ export default async function handler(req, res) {
   }
 
   if (!isSupabaseConfigured) {
-    console.error('[api/registrations] Supabase is not configured (missing backend/.env.local).');
+    // Full detail goes to server logs only - never leak env var names/state to the client.
+    console.error(`[api/registrations] Supabase is not configured: ${supabaseConfigError}`);
     return res.status(503).json({
       error: 'Registration service is not configured yet. Please try again later.'
     });

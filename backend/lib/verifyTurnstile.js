@@ -1,3 +1,5 @@
+export { getClientIp } from './requestIp.js';
+
 const VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
 /**
@@ -39,13 +41,4 @@ export async function verifyTurnstileToken(token, remoteIp) {
     console.error('[verifyTurnstile] request to Cloudflare failed:', err);
     return { success: false, error: 'Could not verify CAPTCHA right now. Please try again.' };
   }
-}
-
-/** Best-effort extraction of the caller's IP from a Next.js API request. */
-export function getClientIp(req) {
-  const forwarded = req.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string' && forwarded.length > 0) {
-    return forwarded.split(',')[0].trim();
-  }
-  return req.socket?.remoteAddress;
 }

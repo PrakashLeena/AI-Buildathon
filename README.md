@@ -107,6 +107,29 @@ service role key or an anon key — registration, validation, Supabase Auth
 user creation, and the database insert all happen inside
 `backend/pages/api/registrations/index.js`.
 
+### Registration form abuse protection
+
+`POST /api/registrations` layers several defenses, in order (cheapest checks
+first):
+
+1. **Per-IP rate limiting** — `backend/lib/rateLimit.js`, a lightweight
+   in-memory limiter (5 submissions / 10 min / IP). Best-effort only (state
+   isn't shared across serverless instances/regions) — a soft speed bump on
+   top of the CAPTCHA below, not a hard global limit.
+2. **Honeypot field** — a hidden `company_website` input real users never
+   see or fill in; a non-empty value is treated as a bot and rejected.
+3. **Cloudflare Turnstile CAPTCHA** — verified server-side in
+   `backend/lib/verifyTurnstile.js` before anything touches the database.
+   Requires `TURNSTILE_SECRET_KEY` (backend) and `VITE_TURNSTILE_SITE_KEY`
+   (frontend) — see the `.env.example` files.
+4. **Server-side validation with length caps** —
+   `backend/lib/validateRegistration.js` re-validates every field
+   independently of the frontend (never trusts `type="email"` or dropdown
+   values alone) and caps string lengths to stop oversized payloads.
+5. **Duplicate-registration protection** — Supabase Auth rejects a second
+   sign-up with the same email (`409 Conflict`), so the same person/email
+   can't register multiple teams.
+
 ## Admin dashboard (`/admin`)
 
 A same-origin admin panel lives inside the backend app at
@@ -165,3 +188,10 @@ public site.
   rejects mismatched `Origin` headers as defense-in-depth.
 - The Firebase Admin credentials and `ADMIN_EMAILS` are server-only env vars
   and are never sent to the browser.
+- `POST /api/admin/session` is also per-IP rate-limited (20 attempts / 15
+  min) as defense-in-depth against scripted brute-forcing, on top of the
+  fact that it already requires a real Google sign-in before the allowlist
+  is even checked.
+- `/admin/:path*` gets a dedicated `Content-Security-Policy` (see
+  `backend/next.config.js`) scoped only to the domains Firebase Auth's
+  Google sign-in popup actually needs.

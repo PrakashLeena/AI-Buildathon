@@ -1564,6 +1564,18 @@ header.scrolled {
   justify-content: center;
 }
 
+/* Honeypot anti-spam field (RegisterModal) - hidden off-screen rather than
+   with display:none/visibility:hidden, which some bots specifically detect
+   and skip. Still fully removed from layout flow and keyboard/AT focus. */
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 /* Cyber submit buttons */
 .submit-btn {
   width: 100%;

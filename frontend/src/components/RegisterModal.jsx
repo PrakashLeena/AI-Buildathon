@@ -39,6 +39,10 @@ export default function RegisterModal() {
   const [success, setSuccess] = useState(false);
   const [captchaToken, setCaptchaToken] = useState('');
   const turnstileRef = useRef(null);
+  // Honeypot anti-spam field: invisible to real users, but simple bots that
+  // blindly fill every input on a form often fill this in too. Any
+  // non-empty value here makes the backend silently reject the submission.
+  const [honeypot, setHoneypot] = useState('');
 
   const departmentOptions = useMemo(() => facultyDeptData[form.faculty] || [], [form.faculty]);
   const errors = useMemo(() => validateRegistrationForm(form, teamSize, members), [form, teamSize, members]);
@@ -59,6 +63,7 @@ export default function RegisterModal() {
     setSubmitting(false);
     setCaptchaToken('');
     turnstileRef.current?.reset();
+    setHoneypot('');
     clearRegistrationDraft();
   };
 
@@ -140,7 +145,8 @@ export default function RegisterModal() {
         team_size: teamSize,
         members,
         tools_interested: [],
-        captchaToken
+        captchaToken,
+        company_website: honeypot
       });
 
       setSuccess(true);
@@ -210,6 +216,23 @@ export default function RegisterModal() {
             </div>
 
             <form id="registerForm" onSubmit={handleSubmit} noValidate>
+              {/* Honeypot: visually hidden from real users (off-screen, not
+                  display:none - some bots skip display:none fields) and
+                  excluded from tab order / screen readers. Left blank by
+                  humans; often auto-filled by simple bots. */}
+              <div className="hp-field" aria-hidden="true">
+                <label htmlFor="regCompanyWebsite">Website</label>
+                <input
+                  type="text"
+                  id="regCompanyWebsite"
+                  name="company_website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                />
+              </div>
+
               <div className="form-group">
                 <label className="form-label" htmlFor="regName">Full Name (Lead Builder)</label>
                 <input

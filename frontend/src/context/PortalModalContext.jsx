@@ -8,11 +8,16 @@ export function PortalModalProvider({ children }) {
   const openModal = useCallback(() => {
     setIsOpen(true);
     document.body.style.overflow = 'hidden';
+    // Lenis animates scroll via JS on wheel/touch events regardless of body
+    // overflow, so without stopping it explicitly, scrolling inside the
+    // modal on desktop would scroll the page behind it instead.
+    window.__lenis?.stop();
   }, []);
 
   const closeModal = useCallback(() => {
     setIsOpen(false);
     document.body.style.overflow = 'auto';
+    window.__lenis?.start();
   }, []);
 
   return (

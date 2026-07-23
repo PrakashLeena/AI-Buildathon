@@ -1,7 +1,13 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { usePortalModal } from '../context/PortalModalContext.jsx';
 import { faculties, facultyDeptData } from '../data/facultyDepartments.js';
 import { registerTeam } from '../lib/api.js';
+import {
+  clearRegistrationDraft,
+  loadRegistrationDraft,
+  saveRegistrationDraft,
+  validateRegistrationForm
+} from '../lib/registrationValidation.js';
 
 const initialFormState = {
   fullName: '',
@@ -15,28 +21,56 @@ const initialFormState = {
 
 export default function RegisterModal() {
   const { isOpen, closeModal } = usePortalModal();
-  const [form, setForm] = useState(initialFormState);
-  const [teamSize, setTeamSize] = useState(1);
-  const [members, setMembers] = useState([]); // extra members beyond the lead
+
+  // Restore any in-progress draft (e.g. if the modal was accidentally closed
+  // by clicking outside it) exactly once, on first render.
+  const draftRef = useRef();
+  if (draftRef.current === undefined) {
+    draftRef.current = loadRegistrationDraft() || {};
+  }
+
+  const [form, setForm] = useState(draftRef.current.form || initialFormState);
+  const [teamSize, setTeamSize] = useState(draftRef.current.teamSize || 1);
+  const [members, setMembers] = useState(draftRef.current.members || []); // extra members beyond the lead
+  const [touched, setTouched] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [success, setSuccess] = useState(false);
 
   const departmentOptions = useMemo(() => facultyDeptData[form.faculty] || [], [form.faculty]);
+  const errors = useMemo(() => validateRegistrationForm(form, teamSize, members), [form, teamSize, members]);
+
+  // Auto-save progress as the user types, so an accidental click outside the
+  // modal (which just hides it) never erases what they've already entered.
+  useEffect(() => {
+    saveRegistrationDraft({ form, teamSize, members });
+  }, [form, teamSize, members]);
 
   const resetAll = () => {
     setForm(initialFormState);
     setTeamSize(1);
     setMembers([]);
+    setTouched({});
     setErrorMsg('');
     setSuccess(false);
     setSubmitting(false);
+    clearRegistrationDraft();
   };
 
-  const handleClose = () => {
+  // Used by the "x" button and by clicking outside the card. Deliberately
+  // does NOT clear entered data - only a successful submit (or closing after
+  // one) clears the draft, so accidentally dismissing the modal never loses
+  // the user's progress.
+  const handleDismiss = () => {
     closeModal();
-    resetAll();
+    if (success) {
+      resetAll();
+    } else {
+      setErrorMsg('');
+    }
   };
+
+  const markTouched = (field) => () => setTouched((t) => ({ ...t, [field]: true }));
 
   const handleFieldChange = (field) => (e) => {
     const value = e.target.value;
@@ -68,6 +102,19 @@ export default function RegisterModal() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (Object.keys(errors).length > 0) {
+      // Reveal every validation error at once (not just the ones already
+      // touched) so the user immediately sees everything left to fix.
+      const allTouched = {};
+      Object.keys(errors).forEach((key) => {
+        allTouched[key] = true;
+      });
+      setTouched((t) => ({ ...t, ...allTouched }));
+      setErrorMsg('Please fix the highlighted fields before submitting.');
+      return;
+    }
+
     setErrorMsg('');
     setSubmitting(true);
 
@@ -86,8 +133,12 @@ export default function RegisterModal() {
       });
 
       setSuccess(true);
+      // The registration is safely stored server-side now - drop the local
+      // draft immediately so it can't be confused with a fresh attempt.
+      clearRegistrationDraft();
       setTimeout(() => {
-        handleClose();
+        closeModal();
+        resetAll();
       }, 3500);
     } catch (err) {
       setErrorMsg(err.message || 'An error occurred during registration.');
@@ -96,12 +147,22 @@ export default function RegisterModal() {
     }
   };
 
+  const fieldError = (key) => (touched[key] && errors[key] ? errors[key] : '');
+  const inputClass = (key) => `form-input${fieldError(key) ? ' input-invalid' : ''}`;
+
   return (
-    <div className={`portal-modal${isOpen ? ' active' : ''}`} id="portalModal" onClick={(e) => {
-      if (e.target.id === 'portalModal') handleClose();
-    }}>
-      <div className="portal-card">
-        <button className="close-portal-btn" id="closePortalBtn" aria-label="Close modal" onClick={handleClose}>
+    <div
+      className={`portal-modal${isOpen ? ' active' : ''}`}
+      id="portalModal"
+      onClick={(e) => {
+        if (e.target.id === 'portalModal') handleDismiss();
+      }}
+    >
+      {/* data-lenis-prevent stops the Lenis smooth-scroll library from
+          hijacking wheel/touch events over this card, so scrolling inside
+          the modal scrolls the modal - not the page behind it. */}
+      <div className="portal-card" data-lenis-prevent>
+        <button className="close-portal-btn" id="closePortalBtn" aria-label="Close modal" onClick={handleDismiss}>
           <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M13.5 4.5l-9 9m0-9l9 9" />
           </svg>
@@ -132,18 +193,19 @@ export default function RegisterModal() {
               {errorMsg}
             </div>
 
-            <form id="registerForm" onSubmit={handleSubmit}>
+            <form id="registerForm" onSubmit={handleSubmit} noValidate>
               <div className="form-group">
                 <label className="form-label" htmlFor="regName">Full Name (Lead Builder)</label>
                 <input
                   type="text"
                   id="regName"
-                  className="form-input"
+                  className={inputClass('fullName')}
                   placeholder="Enter your full name"
-                  required
                   value={form.fullName}
                   onChange={handleFieldChange('fullName')}
+                  onBlur={markTouched('fullName')}
                 />
+                {fieldError('fullName') && <span className="field-error">{fieldError('fullName')}</span>}
               </div>
 
               <div className="form-group">
@@ -151,12 +213,13 @@ export default function RegisterModal() {
                 <input
                   type="email"
                   id="regEmail"
-                  className="form-input"
+                  className={inputClass('email')}
                   placeholder="Enter your email address"
-                  required
                   value={form.email}
                   onChange={handleFieldChange('email')}
+                  onBlur={markTouched('email')}
                 />
+                {fieldError('email') && <span className="field-error">{fieldError('email')}</span>}
               </div>
 
               <div className="form-row">
@@ -165,27 +228,29 @@ export default function RegisterModal() {
                   <input
                     type="text"
                     id="regStudentId"
-                    className="form-input"
+                    className={inputClass('studentId')}
                     placeholder="Enter your Student ID / Reg No"
-                    required
                     value={form.studentId}
                     onChange={handleFieldChange('studentId')}
+                    onBlur={markTouched('studentId')}
                   />
+                  {fieldError('studentId') && <span className="field-error">{fieldError('studentId')}</span>}
                 </div>
                 <div className="form-group">
                   <label className="form-label" htmlFor="regFaculty">Faculty</label>
                   <select
                     id="regFaculty"
-                    className="form-input"
-                    required
+                    className={inputClass('faculty')}
                     value={form.faculty}
                     onChange={handleFieldChange('faculty')}
+                    onBlur={markTouched('faculty')}
                   >
                     <option value="" disabled>Select Faculty</option>
                     {faculties.map((faculty) => (
                       <option key={faculty} value={faculty}>{faculty}</option>
                     ))}
                   </select>
+                  {fieldError('faculty') && <span className="field-error">{fieldError('faculty')}</span>}
                 </div>
               </div>
 
@@ -194,24 +259,24 @@ export default function RegisterModal() {
                   <label className="form-label" htmlFor="regDept">Department</label>
                   <select
                     id="regDept"
-                    className="form-input"
-                    required
+                    className={inputClass('department')}
                     disabled={!form.faculty}
                     value={form.department}
                     onChange={handleFieldChange('department')}
+                    onBlur={markTouched('department')}
                   >
                     <option value="" disabled>{form.faculty ? 'Select Department' : 'Select Faculty First'}</option>
                     {departmentOptions.map((dept) => (
                       <option key={dept} value={dept}>{dept}</option>
                     ))}
                   </select>
+                  {fieldError('department') && <span className="field-error">{fieldError('department')}</span>}
                 </div>
                 <div className="form-group">
                   <label className="form-label" htmlFor="regYear">Year of Study</label>
                   <select
                     id="regYear"
                     className="form-input"
-                    required
                     value={form.yearOfStudy}
                     onChange={handleFieldChange('yearOfStudy')}
                   >
@@ -229,12 +294,13 @@ export default function RegisterModal() {
                   <input
                     type="text"
                     id="regTeamName"
-                    className="form-input"
+                    className={inputClass('teamName')}
                     placeholder="Enter your team name"
-                    required
                     value={form.teamName}
                     onChange={handleFieldChange('teamName')}
+                    onBlur={markTouched('teamName')}
                   />
+                  {fieldError('teamName') && <span className="field-error">{fieldError('teamName')}</span>}
                 </div>
                 <div className="form-group">
                   <label className="form-label">Team Size</label>
@@ -263,22 +329,28 @@ export default function RegisterModal() {
                     <div className="form-group">
                       <input
                         type="text"
-                        className="form-input member-name"
+                        className={inputClass(`member-${index}-name`)}
                         placeholder={`Member ${index + 2} Full Name`}
-                        required
                         value={member.name}
                         onChange={handleMemberChange(index, 'name')}
+                        onBlur={markTouched(`member-${index}-name`)}
                       />
+                      {fieldError(`member-${index}-name`) && (
+                        <span className="field-error">{fieldError(`member-${index}-name`)}</span>
+                      )}
                     </div>
                     <div className="form-group">
                       <input
                         type="text"
-                        className="form-input member-sid"
+                        className={inputClass(`member-${index}-student_id`)}
                         placeholder={`Member ${index + 2} Student ID`}
-                        required
                         value={member.student_id}
                         onChange={handleMemberChange(index, 'student_id')}
+                        onBlur={markTouched(`member-${index}-student_id`)}
                       />
+                      {fieldError(`member-${index}-student_id`) && (
+                        <span className="field-error">{fieldError(`member-${index}-student_id`)}</span>
+                      )}
                     </div>
                   </div>
                 ))}

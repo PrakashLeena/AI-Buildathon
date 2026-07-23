@@ -1617,6 +1617,25 @@ header.scrolled {
   color: #10b981;
 }
 
+/* Inline per-field validation feedback */
+.form-input.input-invalid {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.04);
+}
+
+.form-input.input-invalid:focus {
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.15);
+}
+
+.field-error {
+  display: block;
+  color: #ef4444;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  line-height: 1.4;
+}
+
 .success-overlay {
   text-align: center;
   padding: 3rem 0;

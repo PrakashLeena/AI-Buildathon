@@ -1,0 +1,26 @@
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDEs
+.vscode/
+.idea/
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Env
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+
+# Build outputs
+frontend/dist/
+backend/.next/
+backend/out/
+.vercel

@@ -1,0 +1,8 @@
+/* Original hand-authored design system for the AI Buildathon site.
+   Kept verbatim so the UI is pixel-identical to the pre-migration version.
+   NOTE: @import must come before any other statement (incl. @tailwind). */
+@import './styles.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

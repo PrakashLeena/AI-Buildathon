@@ -1557,6 +1557,13 @@ header.scrolled {
   color: #fff;
 }
 
+/* Cloudflare Turnstile CAPTCHA widget - it renders its own fixed-size
+   iframe (~300px wide), so just center it within the form column. */
+.turnstile-widget {
+  display: flex;
+  justify-content: center;
+}
+
 /* Cyber submit buttons */
 .submit-btn {
   width: 100%;

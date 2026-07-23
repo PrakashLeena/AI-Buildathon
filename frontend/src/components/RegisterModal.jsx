@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { usePortalModal } from '../context/PortalModalContext.jsx';
 import { faculties, facultyDeptData } from '../data/facultyDepartments.js';
 import { registerTeam } from '../lib/api.js';
+import Turnstile from './Turnstile.jsx';
 import {
   clearRegistrationDraft,
   loadRegistrationDraft,
@@ -36,6 +37,8 @@ export default function RegisterModal() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [success, setSuccess] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState('');
+  const turnstileRef = useRef(null);
 
   const departmentOptions = useMemo(() => facultyDeptData[form.faculty] || [], [form.faculty]);
   const errors = useMemo(() => validateRegistrationForm(form, teamSize, members), [form, teamSize, members]);
@@ -54,6 +57,8 @@ export default function RegisterModal() {
     setErrorMsg('');
     setSuccess(false);
     setSubmitting(false);
+    setCaptchaToken('');
+    turnstileRef.current?.reset();
     clearRegistrationDraft();
   };
 
@@ -115,6 +120,11 @@ export default function RegisterModal() {
       return;
     }
 
+    if (!captchaToken) {
+      setErrorMsg('Please complete the CAPTCHA verification before submitting.');
+      return;
+    }
+
     setErrorMsg('');
     setSubmitting(true);
 
@@ -129,7 +139,8 @@ export default function RegisterModal() {
         team_name: form.teamName.trim(),
         team_size: teamSize,
         members,
-        tools_interested: []
+        tools_interested: [],
+        captchaToken
       });
 
       setSuccess(true);
@@ -142,6 +153,11 @@ export default function RegisterModal() {
       }, 3500);
     } catch (err) {
       setErrorMsg(err.message || 'An error occurred during registration.');
+      // Turnstile tokens are single-use - whether the failure was the
+      // CAPTCHA itself or something else (e.g. duplicate email), the spent
+      // token can no longer be redeemed, so force a fresh challenge.
+      setCaptchaToken('');
+      turnstileRef.current?.reset();
     } finally {
       setSubmitting(false);
     }
@@ -354,6 +370,16 @@ export default function RegisterModal() {
                     </div>
                   </div>
                 ))}
+              </div>
+
+              <div className="form-group" style={{ marginTop: '1.5rem' }}>
+                {isOpen && (
+                  <Turnstile
+                    ref={turnstileRef}
+                    onVerify={setCaptchaToken}
+                    onExpire={() => setCaptchaToken('')}
+                  />
+                )}
               </div>
 
               <button type="submit" className="submit-btn" style={{ marginTop: '2rem' }} disabled={submitting}>

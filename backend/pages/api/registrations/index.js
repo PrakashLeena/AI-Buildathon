@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { applyCors } from '../../../lib/cors.js';
 import { isSupabaseConfigured, supabaseAdmin, supabaseConfigError } from '../../../lib/supabaseAdmin.js';
 import { validateRegistration } from '../../../lib/validateRegistration.js';
+import { getClientIp, verifyTurnstileToken } from '../../../lib/verifyTurnstile.js';
 
 // Generates a random password for the Supabase Auth user created on behalf
 // of the registrant. Nobody needs to know/use this password today - it just
@@ -22,6 +23,12 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'GET, POST, OPTIONS');
     return res.status(405).json({ error: 'Method not allowed.' });
+  }
+
+  const { captchaToken } = req.body || {};
+  const captchaResult = await verifyTurnstileToken(captchaToken, getClientIp(req));
+  if (!captchaResult.success) {
+    return res.status(400).json({ error: captchaResult.error });
   }
 
   const { valid, data, error: validationError } = validateRegistration(req.body);

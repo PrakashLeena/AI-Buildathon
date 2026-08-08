@@ -224,70 +224,75 @@ export default function AdminDashboard({ adminEmail, initialRegistrations, loadE
             Showing {filtered.length} of {registrations.length} registration{registrations.length === 1 ? '' : 's'}
           </p>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl shadow-black/40" style={{ minHeight: '420px' }}>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-base">
                 <thead>
-                  <tr className="border-b border-slate-800 text-left text-slate-400 text-xs uppercase tracking-wider">
-                    <th className="px-4 py-3 cursor-pointer select-none whitespace-nowrap" onClick={() => handleSort('team_name')}>
+                  <tr className="border-b-2 border-slate-700 text-left text-slate-400 text-xs uppercase tracking-widest bg-slate-800/60">
+                    <th className="px-6 py-4 cursor-pointer select-none whitespace-nowrap font-bold" onClick={() => handleSort('team_name')}>
                       Team{sortIndicator('team_name')}
                     </th>
-                    <th className="px-4 py-3 cursor-pointer select-none whitespace-nowrap" onClick={() => handleSort('full_name')}>
+                    <th className="px-6 py-4 cursor-pointer select-none whitespace-nowrap font-bold" onClick={() => handleSort('full_name')}>
                       Lead Builder{sortIndicator('full_name')}
                     </th>
-                    <th className="px-4 py-3 cursor-pointer select-none whitespace-nowrap" onClick={() => handleSort('faculty')}>
+                    <th className="px-6 py-4 cursor-pointer select-none whitespace-nowrap font-bold" onClick={() => handleSort('faculty')}>
                       Faculty{sortIndicator('faculty')}
                     </th>
-                    <th className="px-4 py-3 whitespace-nowrap">Size</th>
+                    <th className="px-6 py-4 whitespace-nowrap font-bold">Size</th>
                     <th
-                      className="px-4 py-3 cursor-pointer select-none whitespace-nowrap"
+                      className="px-6 py-4 cursor-pointer select-none whitespace-nowrap font-bold"
                       onClick={() => handleSort('created_at')}
                     >
                       Registered{sortIndicator('created_at')}
                     </th>
-                    <th className="px-4 py-3 whitespace-nowrap"></th>
+                    <th className="px-6 py-4 whitespace-nowrap font-bold">Members</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-4 py-10 text-center text-slate-500">
+                      <td colSpan={6} className="px-6 py-16 text-center text-slate-500 text-base">
                         No registrations {query ? 'match your search' : 'yet'}.
                       </td>
                     </tr>
                   )}
                   {filtered.map((r) => (
                     <Fragment key={r.id}>
-                      <tr className="border-b border-slate-800/60 hover:bg-slate-800/30 transition">
-                        <td className="px-4 py-3 font-semibold text-white whitespace-nowrap">{r.team_name}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <p className="text-slate-100 font-medium">{r.full_name}</p>
-                          <p className="text-slate-400 text-xs">{r.student_email}</p>
-                          <p className="text-slate-500 text-xs">ID: {r.student_id}</p>
+                      <tr className="border-b border-slate-800/60 hover:bg-slate-800/40 transition-colors duration-150">
+                        <td className="px-6 py-4 font-bold text-white whitespace-nowrap text-base">{r.team_name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <p className="text-slate-100 font-semibold text-base">{r.full_name}</p>
+                          <p className="text-slate-400 text-sm mt-0.5">{r.student_email}</p>
+                          <p className="text-slate-500 text-xs mt-0.5">ID: {r.student_id}</p>
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap">{r.faculty}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">{r.team_size}</td>
-                        <td className="px-4 py-3 text-slate-400 whitespace-nowrap">{formatDate(r.created_at)}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          {r.team_size > 1 && (
+                        <td className="px-6 py-4 whitespace-nowrap text-slate-200">{r.faculty}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-800 border border-slate-700 text-white font-bold text-sm">{r.team_size}</span>
+                        </td>
+                        <td className="px-6 py-4 text-slate-400 whitespace-nowrap text-sm">{formatDate(r.created_at)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {r.team_size > 1 ? (
                             <button
                               type="button"
                               onClick={() => setExpandedId(expandedId === r.id ? null : r.id)}
-                              className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition ${
+                              className={`inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg border-2 transition-all duration-150 shadow-sm ${
                                 expandedId === r.id
-                                  ? 'bg-cyan-500/25 text-cyan-200 border-cyan-400/50'
-                                  : 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/20'
+                                  ? 'bg-cyan-500/30 text-cyan-100 border-cyan-400 shadow-cyan-500/20'
+                                  : 'bg-cyan-500/10 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/25 hover:border-cyan-400 hover:text-cyan-100 hover:shadow-md hover:shadow-cyan-500/20'
                               }`}
                             >
-                              {expandedId === r.id ? 'Hide' : `Members (${r.team_size - 1})`}
+                              <span className="text-base leading-none">{expandedId === r.id ? '▲' : '▼'}</span>
+                              {expandedId === r.id ? 'Hide Members' : `Members (${r.team_size - 1})`}
                             </button>
+                          ) : (
+                            <span className="text-slate-600 text-sm">Solo</span>
                           )}
                         </td>
                       </tr>
                       {expandedId === r.id && (
                         <tr className="bg-slate-950/60">
-                          <td colSpan={6} className="px-4 py-4">
-                            <p className="text-xs uppercase tracking-wider text-slate-500 mb-2">
+                          <td colSpan={6} className="px-6 py-5">
+                            <p className="text-sm uppercase tracking-wider text-slate-500 mb-3">
                               Department: <span className="text-slate-300">{r.department}</span> · Year:{' '}
                               <span className="text-slate-300">{r.year_of_study}</span>
                             </p>

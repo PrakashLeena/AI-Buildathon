@@ -10,7 +10,7 @@ export const timelineItems = [
   },
   {
     phase: '02',
-    date: 'August 10, 2026',
+    date: 'August 14, 2026',
     title: 'Registration Deadline',
     details: [
       'Roster locks. No new profiles or members accepted after midnight',
@@ -19,15 +19,22 @@ export const timelineItems = [
   },
   {
     phase: '03',
-    date: 'August 12, 2026,',
-    title: 'Hackathon Kick-Off Session (2 Hr)',
+    date: 'August 17, 2026',
+    title: 'Hackathon Kick-Off Session and Introduction',
     details: [
-      'Official Alibaba Cloud introductory seminar',
-      'Training labs on Qoder, QoderWork & MuleRun'
+      '20-minute introduction to the Buildathon, structure and next steps.'
     ]
   },
   {
     phase: '04',
+    date: 'August 20, 2026',
+    title: 'Product Training Online Session',
+    details: [
+      "Get introduced to the tools you'll use to build your solution."
+    ]
+  },
+  {
+    phase: '05',
     date: 'August 14 – 27, 2026',
     title: 'Submission Window Open (2 Weeks)',
     details: [
@@ -36,13 +43,11 @@ export const timelineItems = [
     ]
   },
   {
-    phase: '05',
-    date: 'September 1 – 15, 2026',
-    title: 'Evaluation & Final Pitching Session',
+    phase: '06',
+    date: 'September 4, 2026 (Tentative)',
+    title: 'Finals (Onsite Pitching)',
     details: [
-      'Top 5-8 finalist teams announced',
-      'Live pitching presentation (Video conference / physical auditorium)',
-      'Winner announcement and award ceremony'
+      'Finalist teams pitch their solutions onsite.'
     ]
   }
 ];

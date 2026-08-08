@@ -8,7 +8,7 @@ export default function Hero() {
   const titleMainRef = useRef(null);
   const { openModal } = usePortalModal();
   useHeroParticles(canvasRef);
-  const countdown = useCountdown("August 10, 2026 23:59:59");
+  const countdown = useCountdown("August 14, 2026 23:59:59");
 
   // Blur character entry animation for the Hero Title on load (ported 1:1).
   useEffect(() => {

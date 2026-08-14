@@ -1,53 +1,37 @@
 export const timelineItems = [
   {
     phase: '01',
-    date: 'August 2, 2026',
-    title: 'Registration Opens',
+    date: 'August 14, 2026',
+    title: 'Registration Deadline',
     details: [
-      'Portal officially live for form entries and account creations',
-      'Define team roster (1-3 members)'
+      'Roster locks — no new profiles or members accepted after deadline',
     ]
   },
   {
     phase: '02',
-    date: 'August 14, 2026',
-    title: 'Registration Deadline',
+    date: 'August 20, 2026',
+    title: 'Kick-Off & Product Training Online Session',
     details: [
-      'Roster locks. No new profiles or members accepted after midnight',
-      'Workspace and tooling credentials dispatched'
+      'Workspace and tooling credentials dispatched to registered teams',
+      'Combined Kick-Off session and hands-on Product Training',
+      'Introduction to tools, structure, and project guidelines'
     ]
   },
   {
     phase: '03',
-    date: 'August 17, 2026',
-    title: 'Hackathon Kick-Off Session and Introduction',
+    date: 'August 27, 2026',
+    title: 'Submission Deadline',
     details: [
-      '20-minute introduction to the Buildathon, structure and next steps.'
+      'Build models, compile source repository, and submit walkthrough demo video',
+      'Submission portal closes'
     ]
   },
   {
     phase: '04',
-    date: 'August 20, 2026',
-    title: 'Product Training Online Session',
-    details: [
-      "Get introduced to the tools you'll use to build your solution."
-    ]
-  },
-  {
-    phase: '05',
-    date: 'August 14 – 27, 2026',
-    title: 'Submission Window Open (2 Weeks)',
-    details: [
-      'Build models, compile source repo, record walk-through demo video',
-      'Direct mentorship check-ins with Alibaba experts'
-    ]
-  },
-  {
-    phase: '06',
     date: 'September 4, 2026 (Tentative)',
     title: 'Finals (Onsite Pitching)',
     details: [
-      'Finalist teams pitch their solutions onsite.'
+      'Finalist teams pitch their AI solutions onsite before judges'
     ]
   }
 ];

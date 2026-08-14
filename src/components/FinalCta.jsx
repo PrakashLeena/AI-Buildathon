@@ -1,8 +1,11 @@
 import React from "react";
+import useCountdown from "../hooks/useCountdown.js";
 import { usePortalModal } from "../context/PortalModalContext.jsx";
+import { REGISTRATION_CUTOFF_DATE } from "../lib/registrationDeadline.js";
 
 export default function FinalCta() {
   const { openModal } = usePortalModal();
+  const countdown = useCountdown(REGISTRATION_CUTOFF_DATE);
 
   return (
     <section className="final-cta" aria-labelledby="final-cta-title">
@@ -21,24 +24,30 @@ export default function FinalCta() {
           <span>Build something worth showing.</span>
         </div>
 
-        <button
-          type="button"
-          className="final-cta-button"
-          onClick={openModal}
-        >
-          Register for AI Buildathon{" "}
-          <span className="material-symbols-outlined" aria-hidden="true">
-            arrow_forward
-          </span>
-        </button>
+        {!countdown.closed ? (
+          <button
+            type="button"
+            className="final-cta-button"
+            onClick={openModal}
+          >
+            Register for AI Buildathon{" "}
+            <span className="material-symbols-outlined" aria-hidden="true">
+              arrow_forward
+            </span>
+          </button>
+        ) : (
+          <div className="final-cta-closed-badge" style={{ margin: "1.5rem 0", color: "var(--primary-orange)", fontWeight: 600, fontSize: "1.1rem" }}>
+            Registrations are officially closed.
+          </div>
+        )}
 
         <a className="final-cta-contact-link" href="#contact">
           Questions? Contact us <span aria-hidden="true">→</span>
         </a>
 
         <p className="final-cta-deadline">
-          <strong>Registrations close August 10</strong>
-          <span>Open to University of Kelaniya students.</span>
+          <strong>Registrations close August 14</strong>
+          <span>Open to students of the University of Kelaniya.</span>
         </p>
       </div>
     </section>

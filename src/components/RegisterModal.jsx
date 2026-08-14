@@ -10,6 +10,7 @@ import {
   saveRegistrationDraft,
   validateRegistrationForm,
 } from "../lib/registrationValidation.js";
+import { isRegistrationClosed } from "../lib/registrationDeadline.js";
 
 const initialFormState = {
   fullName: "",
@@ -564,7 +565,24 @@ export default function RegisterModal() {
             id="registerFormContent"
             style={{ display: success ? "none" : "block" }}
           >
-            <h3 className="portal-title">
+            {isRegistrationClosed() ? (
+              <div style={{ textAlign: "center", padding: "2rem 1rem" }}>
+                <h3 className="portal-title">Registration Closed</h3>
+                <p className="portal-sub" style={{ marginTop: "1rem" }}>
+                  Registrations for the AI Buildathon closed on August 15 at 7:00 AM.
+                </p>
+                <button
+                  type="button"
+                  className="submit-btn"
+                  style={{ marginTop: "1.5rem" }}
+                  onClick={closeModal}
+                >
+                  Close
+                </button>
+              </div>
+            ) : (
+              <div>
+                <h3 className="portal-title">
               {step === "otp" ? "Verify Your Email" : "Join the AI Sprint"}
             </h3>
             <p className="portal-sub">
@@ -1120,6 +1138,8 @@ export default function RegisterModal() {
                 </button>
               </p>
             </form>
+            )}
+              </div>
             )}
           </div>
             </>

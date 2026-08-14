@@ -55,13 +55,29 @@ export default function useTimelineScroll({ containerRef, progressRef, laserTail
       const viewportHeight = window.innerHeight;
       const triggerPoint = viewportHeight * 0.6;
 
+      // ── Snap bar track to span exactly first→last circle center ──────────
+      const barEl = timelineContainer.querySelector('.timeline-bar');
+      if (barEl && timelineItems.length > 0) {
+        const firstCircle = timelineItems[0].querySelector('.timeline-phase');
+        const lastCircle = timelineItems[timelineItems.length - 1].querySelector('.timeline-phase');
+        if (firstCircle && lastCircle) {
+          const firstRect = firstCircle.getBoundingClientRect();
+          const lastRect  = lastCircle.getBoundingClientRect();
+          const firstMid  = firstRect.top + firstRect.height / 2 - containerRect.top;
+          const lastMid   = lastRect.top  + lastRect.height  / 2 - containerRect.top;
+          barEl.style.top    = firstMid + 'px';
+          barEl.style.bottom = (containerRect.height - lastMid) + 'px';
+        }
+      }
+      // ─────────────────────────────────────────────────────────────────────
+
       let totalHeight = containerRect.height;
       if (timelineItems.length > 0) {
         const lastItem = timelineItems[timelineItems.length - 1];
-        const lastItemDot = lastItem.querySelector('.timeline-dot');
-        if (lastItemDot) {
-          const lastItemDotRect = lastItemDot.getBoundingClientRect();
-          const offset = containerRect.bottom - lastItemDotRect.top - 4;
+        const lastItemCircle = lastItem.querySelector('.timeline-phase');
+        if (lastItemCircle) {
+          const lastItemCircleRect = lastItemCircle.getBoundingClientRect();
+          const offset = containerRect.bottom - lastItemCircleRect.bottom + lastItemCircleRect.height / 2;
           totalHeight -= offset;
         }
       }
@@ -91,12 +107,13 @@ export default function useTimelineScroll({ containerRef, progressRef, laserTail
       lastScrollY = currentScrollY;
 
       timelineItems.forEach((item) => {
-        const dotWrapper = item.querySelector('.timeline-dot-wrapper');
-        if (!dotWrapper) return;
+        const circle = item.querySelector('.timeline-phase');
+        if (!circle) return;
 
-        const dotRect = dotWrapper.getBoundingClientRect();
+        const circleRect = circle.getBoundingClientRect();
+        const circleMidY = circleRect.top + circleRect.height / 2;
 
-        if (dotRect.top <= triggerPoint) {
+        if (circleMidY <= triggerPoint) {
           if (!item.classList.contains('active-timeline')) {
             item.classList.add('active-timeline');
           }

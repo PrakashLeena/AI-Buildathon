@@ -52,7 +52,6 @@ export default function Timeline({ techContainerRef }) {
           >
             <div className="timeline-dot-wrapper">
               <span className="timeline-phase">{item.phase}</span>
-              <div className="timeline-dot"></div>
             </div>
             <div className="timeline-content reveal">
               <div

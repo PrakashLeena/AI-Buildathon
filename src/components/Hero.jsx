@@ -170,7 +170,7 @@ export default function Hero() {
         experience needed.
       </p>
       <div className="hero-ctas" style={{ position: "relative", zIndex: 2 }}>
-        {!countdown.closed && (
+        {!countdown.closed ? (
           <a
             href="#"
             className="btn-primary open-portal-btn"
@@ -181,6 +181,16 @@ export default function Hero() {
             }}
           >
             Register Now{" "}
+            <span className="material-symbols-outlined" aria-hidden="true">
+              arrow_forward
+            </span>
+          </a>
+        ) : (
+          <a
+            href="#submission"
+            className="btn-primary"
+          >
+            Submit Project Brief{" "}
             <span className="material-symbols-outlined" aria-hidden="true">
               arrow_forward
             </span>

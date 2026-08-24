@@ -39,6 +39,15 @@ const PEOPLE_COLUMNS = [
   { label: 'Registered At (UTC)', value: (p) => p.created_at }
 ];
 
+const SUBMISSION_COLUMNS = [
+  { label: 'Team Name', value: (s) => s.team_name },
+  { label: 'Participant Email', value: (s) => s.participant_email },
+  { label: 'WhatsApp Number', value: (s) => s.whatsapp_number },
+  { label: 'Project Brief', value: (s) => s.project_brief },
+  { label: 'Submitted At (UTC)', value: (s) => s.created_at },
+  { label: 'Last Updated At (UTC)', value: (s) => s.updated_at || s.created_at }
+];
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
@@ -55,6 +64,113 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: 'Database is not configured.' });
   }
 
+  const type = (req.query?.type || '').toLowerCase();
+  const format = (req.query?.format || '').toLowerCase();
+  const singleId = req.query?.id ? String(req.query.id).trim() : null;
+  const dateStr = new Date().toISOString().slice(0, 10);
+
+  // --- SUBMISSIONS EXPORT (CSV or TXT) ---
+  if (type === 'submissions' || type === 'submissions_txt' || type === 'submissions-txt' || type === 'submission' || type === 'projects') {
+    let query = supabaseAdmin
+      .from('submissions')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (singleId) {
+      query = query.eq('id', singleId);
+    }
+
+    const { data: subData, error: subError } = await query;
+
+    if (subError) {
+      console.error('[api/admin/export] submissions query failed:', subError.message);
+      return res.status(500).json({ error: 'Failed to load submissions.' });
+    }
+
+    const rows = subData || [];
+
+    // Check if TXT format is requested
+    if (format === 'txt' || type === 'submissions_txt' || type === 'submissions-txt' || (singleId && format !== 'csv')) {
+      if (singleId && rows.length > 0) {
+        const item = rows[0];
+        const safeTeamName = (item.team_name || 'team').replace(/[^a-zA-Z0-9-_]/g, '_');
+        const txtContent = [
+          '================================================================================',
+          `AI BUILDATHON — PROJECT SUBMISSION: ${item.team_name || 'N/A'}`,
+          '================================================================================',
+          `Submission ID     : ${item.id}`,
+          `Team Name         : ${item.team_name}`,
+          `Participant Email : ${item.participant_email}`,
+          `WhatsApp Number   : ${item.whatsapp_number}`,
+          `Submitted At (UTC): ${item.created_at}`,
+          `Last Updated (UTC): ${item.updated_at || item.created_at}`,
+          '--------------------------------------------------------------------------------',
+          'PROJECT BRIEF & BACKGROUND:',
+          '--------------------------------------------------------------------------------',
+          item.project_brief || '(No brief provided)',
+          '================================================================================',
+          ''
+        ].join('\n');
+
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="${safeTeamName}-project-brief-${dateStr}.txt"`);
+        res.setHeader('Cache-Control', 'no-store');
+        return res.status(200).send(txtContent);
+      }
+
+      // Consolidated all submissions TXT report
+      const header = [
+        '================================================================================',
+        'AI BUILDATHON — ALL PROJECT SUBMISSIONS REPORT',
+        `Generated At      : ${new Date().toUTCString()}`,
+        `Total Submissions : ${rows.length}`,
+        '================================================================================',
+        '',
+        ''
+      ].join('\n');
+
+      const itemsTxt = rows.map((item, index) => {
+        return [
+          `--------------------------------------------------------------------------------`,
+          `[#${index + 1}] TEAM: ${item.team_name || 'N/A'}`,
+          `--------------------------------------------------------------------------------`,
+          `Participant Email : ${item.participant_email}`,
+          `WhatsApp Number   : ${item.whatsapp_number}`,
+          `Submitted At (UTC): ${item.created_at}`,
+          `Last Updated (UTC): ${item.updated_at || item.created_at}`,
+          '',
+          `PROJECT BRIEF:`,
+          item.project_brief || '(No brief provided)',
+          ''
+        ].join('\n');
+      }).join('\n\n');
+
+      const footer = [
+        '================================================================================',
+        'END OF REPORT',
+        '================================================================================',
+        ''
+      ].join('\n');
+
+      const fullTxt = `${header}${itemsTxt}\n\n${footer}`;
+
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="all-project-submissions-${dateStr}.txt"`);
+      res.setHeader('Cache-Control', 'no-store');
+      return res.status(200).send(fullTxt);
+    }
+
+    // Default to CSV for submissions
+    const csv = toCsv(rows, SUBMISSION_COLUMNS);
+    const filename = `all-project-submissions-${dateStr}.csv`;
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(200).send('\uFEFF' + csv);
+  }
+
+  // --- REGISTRATIONS EXPORT (People or Teams) ---
   const { data, error } = await supabaseAdmin
     .from('registrations')
     .select('*')
@@ -64,9 +180,6 @@ export default async function handler(req, res) {
     console.error('[api/admin/export] query failed:', error.message);
     return res.status(500).json({ error: 'Failed to load registrations.' });
   }
-
-  const type = (req.query?.type || '').toLowerCase();
-  const dateStr = new Date().toISOString().slice(0, 10);
 
   let csv = '';
   let filename = '';

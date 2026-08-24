@@ -36,9 +36,16 @@ export default function FinalCta() {
             </span>
           </button>
         ) : (
-          <div className="final-cta-closed-badge" style={{ margin: "1.5rem 0", color: "var(--primary-orange)", fontWeight: 600, fontSize: "1.1rem" }}>
-            Registrations are officially closed.
-          </div>
+          <a
+            href="#submission"
+            className="final-cta-button"
+            style={{ textDecoration: "none" }}
+          >
+            Submit Project Brief{" "}
+            <span className="material-symbols-outlined" aria-hidden="true">
+              arrow_forward
+            </span>
+          </a>
         )}
 
         <a className="final-cta-contact-link" href="#contact">

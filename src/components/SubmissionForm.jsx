@@ -298,16 +298,6 @@ export default function SubmissionForm() {
               />
             </div>
 
-            {/* Registered teams only & Overwrite notice */}
-            <div className="submission-overwrite-notice">
-              <span className="material-symbols-outlined notice-icon" aria-hidden="true">
-                verified
-              </span>
-              <span>
-                <strong>Registered Teams Only:</strong> Custom teams are not permitted as the registration period has closed. Submitting again for your team will overwrite any previous project brief.
-              </span>
-            </div>
-
             {/* Step Progress Tracker */}
             <div className="submission-stepper">
               <div className={`step-pill ${currentStep === "details" ? "active" : currentStep === "otp" || currentStep === "brief" ? "done" : ""}`}>
@@ -555,7 +545,6 @@ export default function SubmissionForm() {
                       <span className="material-symbols-outlined">verified</span>
                     </div>
                     <div>
-                      <span className="team-eyebrow">AUTOMATICALLY DETECTED TEAM</span>
                       <h3 className="team-name-title">{detectedTeam?.teamName || "Your Registered Team"}</h3>
                     </div>
                   </div>
@@ -670,7 +659,7 @@ export default function SubmissionForm() {
                     <span className="material-symbols-outlined" aria-hidden="true">
                       lock
                     </span>
-                    Directly linked to {detectedTeam?.teamName || "your team"}. Submitting will overwrite any previous brief for this team.
+                    Submitting will overwrite any previous brief for this team.
                   </p>
                 </div>
               </form>

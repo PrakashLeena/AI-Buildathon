@@ -17,14 +17,6 @@ export function validateSubmissionForm(form) {
     errors.participantEmail = 'Please enter a valid Gmail address (e.g. participant@gmail.com).';
   }
 
-  // Team
-  const team = (form.team || '').trim();
-  if (!team) {
-    errors.team = 'Please select or enter the participant’s team.';
-  } else if (team.length < 2) {
-    errors.team = 'Team name must be at least 2 characters.';
-  }
-
   // WhatsApp Number
   const whatsapp = (form.whatsapp || '').trim();
   const digitsOnly = whatsapp.replace(/\D/g, '');
@@ -46,16 +38,19 @@ export function validateSubmissionForm(form) {
     }
   }
 
-  // 3. Project Brief & Background
-  const brief = (form.projectBrief || '').trim();
-  if (!brief) {
-    errors.projectBrief = 'Please provide an overview and background for your project.';
-  } else if (brief.length < 20) {
-    errors.projectBrief = `Project brief is too short (${brief.length}/20 min characters). Please provide a brief overview.`;
-  } else if (brief.length > 1000) {
-    errors.projectBrief = `Project brief cannot exceed 1000 characters (${brief.length}/1000).`;
+  // 3. Project Brief & Background (validated when OTP is verified / on final submission)
+  if (form.isBriefRequired) {
+    const brief = (form.projectBrief || '').trim();
+    if (!brief) {
+      errors.projectBrief = 'Please provide an overview and background for your project.';
+    } else if (brief.length < 20) {
+      errors.projectBrief = `Project brief is too short (${brief.length}/20 min characters). Please provide a brief overview.`;
+    } else if (brief.length > 1000) {
+      errors.projectBrief = `Project brief cannot exceed 1000 characters (${brief.length}/1000).`;
+    }
   }
 
   return errors;
 }
+
 

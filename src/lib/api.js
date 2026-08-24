@@ -123,6 +123,17 @@ export function getRegisteredTeams() {
 }
 
 /**
+ * Verify OTP and auto-detect team details for submission.
+ * Payload: { email, otp, otpToken }.
+ */
+export function verifySubmissionOtp(payload) {
+  return request('/submissions/verify', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+}
+
+/**
  * Submit Project Brief and Overview.
  * Payload: { participant_email, team_name, whatsapp_number, otp, otpToken, project_brief }.
  */
@@ -132,4 +143,5 @@ export function submitProjectBrief(payload) {
     body: JSON.stringify(payload)
   });
 }
+
 

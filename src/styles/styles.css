@@ -2951,6 +2951,172 @@ footer::before {
   color: #14532d;
 }
 
+/* Submission Stepper */
+.submission-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2.25rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.step-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.step-pill.active {
+  opacity: 1;
+}
+
+.step-pill.done {
+  opacity: 0.85;
+}
+
+.step-pill-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.step-pill.active .step-pill-num {
+  background: var(--primary-orange);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(255, 85, 0, 0.35);
+}
+
+.step-pill.done .step-pill-num {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.step-pill-label {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.step-pill-divider {
+  flex: 1;
+  height: 2px;
+  background: #e2e8f0;
+  margin: 0 1rem;
+}
+
+/* Detected Team Card (On top of brief) */
+.detected-team-card {
+  background: linear-gradient(135deg, rgba(255, 85, 0, 0.06) 0%, rgba(255, 136, 0, 0.03) 100%);
+  border: 1.5px solid rgba(255, 85, 0, 0.25);
+  border-radius: 16px;
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 25px rgba(255, 85, 0, 0.05);
+}
+
+.team-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px dashed rgba(255, 85, 0, 0.2);
+}
+
+.team-badge-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--primary-orange), #ff7700);
+  color: #ffffff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(255, 85, 0, 0.3);
+}
+
+.team-badge-icon .material-symbols-outlined {
+  font-size: 1.75rem;
+}
+
+.team-eyebrow {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--primary-orange);
+  margin-bottom: 0.2rem;
+  font-family: var(--font-heading);
+}
+
+.team-name-title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.team-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.team-detail-item {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.2rem;
+}
+
+.detail-value {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.btn-text-edit {
+  background: transparent;
+  border: none;
+  color: var(--primary-orange);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+.btn-text-edit:hover {
+  color: #e04b00;
+}
+
 .submission-step-block {
   margin-bottom: 2.5rem;
   padding-bottom: 2.5rem;

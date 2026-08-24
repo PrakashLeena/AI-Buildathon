@@ -116,6 +116,41 @@ export default async function handler(req, res) {
       });
     }
     recipientName = existing.full_name;
+  } else if (mode === 'submission') {
+    // Submissions are strictly for registered teams only (registration period closed).
+    if (!isSupabaseConfigured) {
+      return res.status(503).json({ error: 'This service is not available right now. Please try again later.' });
+    }
+    const { data: rows, error: regError } = await supabaseAdmin
+      .from('registrations')
+      .select('team_name, full_name, student_email, members');
+
+    if (regError) {
+      console.error('[api/otp/send] submission lookup error:', regError.message);
+      return res.status(500).json({ error: 'Could not verify registration. Please try again.' });
+    }
+
+    let isRegistered = false;
+    for (const row of rows || []) {
+      if (String(row.student_email || '').trim().toLowerCase() === cleanEmail) {
+        recipientName = row.full_name || 'Participant';
+        isRegistered = true;
+        break;
+      }
+      const members = Array.isArray(row.members) ? row.members : [];
+      const matched = members.find((m) => String(m?.email || '').trim().toLowerCase() === cleanEmail);
+      if (matched) {
+        recipientName = matched.name || 'Participant';
+        isRegistered = true;
+        break;
+      }
+    }
+
+    if (!isRegistered) {
+      return res.status(403).json({
+        error: 'This email is not registered with any team. Registration has closed, and brief submissions are open only to registered teams.'
+      });
+    }
   } else if (mode === 'register' && isSupabaseConfigured) {
     // Catch already-registered leaders BEFORE the user goes through the whole
     // OTP dance, instead of failing at the very end of the flow. One person =

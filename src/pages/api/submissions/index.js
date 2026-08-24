@@ -52,9 +52,41 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Please enter a valid Gmail address (e.g. participant@gmail.com).' });
   }
 
-  const cleanTeam = typeof team_name === 'string' ? team_name.trim() : '';
+  let cleanTeam = typeof team_name === 'string' ? team_name.trim() : '';
+  if (isSupabaseConfigured) {
+    let matchedRegistration = false;
+    try {
+      const { data: rows } = await supabaseAdmin
+        .from('registrations')
+        .select('team_name, student_email, members');
+      if (Array.isArray(rows)) {
+        for (const row of rows) {
+          if (String(row.student_email || '').trim().toLowerCase() === cleanEmail) {
+            cleanTeam = row.team_name;
+            matchedRegistration = true;
+            break;
+          }
+          const members = Array.isArray(row.members) ? row.members : [];
+          if (members.some((m) => String(m?.email || '').trim().toLowerCase() === cleanEmail)) {
+            cleanTeam = row.team_name;
+            matchedRegistration = true;
+            break;
+          }
+        }
+      }
+    } catch (lookupErr) {
+      console.warn('[api/submissions] team lookup:', lookupErr.message);
+    }
+
+    if (!matchedRegistration) {
+      return res.status(403).json({
+        error: 'This email is not associated with any registered team. Registration has ended, and submissions are strictly limited to registered teams.'
+      });
+    }
+  }
+
   if (!cleanTeam) {
-    return res.status(400).json({ error: 'Please select or enter the participant’s team.' });
+    return res.status(400).json({ error: 'No registered team found for this participant.' });
   }
 
   const cleanPhone = typeof whatsapp_number === 'string' ? whatsapp_number.trim() : '';

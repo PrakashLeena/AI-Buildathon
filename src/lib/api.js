@@ -75,3 +75,24 @@ export function updateTeamMembers(payload) {
     body: JSON.stringify(payload)
   });
 }
+
+/**
+ * Fetch unique list of registered teams.
+ */
+export function getRegisteredTeams() {
+  return request('/teams', {
+    method: 'GET'
+  });
+}
+
+/**
+ * Submit Project Brief and Overview.
+ * Payload: { participant_email, team_name, whatsapp_number, otp, otpToken, project_brief }.
+ */
+export function submitProjectBrief(payload) {
+  return request('/submissions', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+}
+

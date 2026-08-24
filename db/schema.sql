@@ -40,3 +40,18 @@ create policy "Allow read for owner"
 on registrations for select
 to authenticated
 using (auth.uid() = user_id);
+
+-- Project Brief Submissions Table (One submission per team, subsequent submissions overwrite)
+create table if not exists submissions (
+  id uuid default gen_random_uuid() primary key,
+  participant_email text not null,
+  team_name text not null unique,
+  whatsapp_number text not null,
+  project_brief text not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table submissions enable row level security;
+
+

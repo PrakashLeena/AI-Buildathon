@@ -6,6 +6,7 @@ import About from '../components/About.jsx';
 import Toolkit from '../components/Toolkit.jsx';
 import Timeline from '../components/Timeline.jsx';
 import Prizes from '../components/Prizes.jsx';
+import SubmissionForm from '../components/SubmissionForm.jsx';
 import FinalCta from '../components/FinalCta.jsx';
 import Footer from '../components/Footer.jsx';
 import RegisterModal from '../components/RegisterModal.jsx';
@@ -37,6 +38,7 @@ export default function Home() {
       <Toolkit />
       <Timeline techContainerRef={techContainerRef} />
       <Prizes />
+      <SubmissionForm />
       <FinalCta />
       <RegisterModal />
       <Footer />

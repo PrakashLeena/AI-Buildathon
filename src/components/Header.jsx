@@ -43,6 +43,9 @@ export default function Header() {
           <a href="#prizes" onClick={() => setMenuOpen(false)}>Prizes</a>
         </li>
         <li>
+          <a href="#submission" onClick={() => setMenuOpen(false)}>Submission</a>
+        </li>
+        <li>
           <a
             href="#contact"
             className="nav-contact"

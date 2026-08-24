@@ -44,11 +44,12 @@ export default async function handler(req, res) {
 
   const { email, full_name, captchaToken, previousToken, company_website: honeypot } = req.body || {};
 
-  // Two purposes share this endpoint:
-  //   "register" (default) - the email must NOT already be registered.
-  //   "edit"               - the email MUST belong to an existing team
-  //                          leader, who is verifying to edit their team.
-  const mode = req.body?.mode === 'edit' ? 'edit' : 'register';
+  // Three purposes share this endpoint:
+  //   "register" (default)   - the email must NOT already be registered.
+  //   "edit"                 - the email MUST belong to an existing team leader.
+  //   "submission"           - for project brief submissions (participant verification).
+  const rawMode = req.body?.mode;
+  const mode = rawMode === 'edit' ? 'edit' : rawMode === 'submission' ? 'submission' : 'register';
 
   // Same honeypot as the registration endpoint - bots that fill every field
   // reveal themselves here before we spend an email send.
@@ -63,7 +64,7 @@ export default async function handler(req, res) {
   if (!EMAIL_RE.test(cleanEmail) || cleanEmail.length > 254) {
     return res.status(400).json({ error: 'A valid email address is required.' });
   }
-  // In edit mode the name comes from the stored registration instead.
+  // In edit or submission mode, full name is optional.
   if (mode === 'register' && (!cleanName || cleanName.length > 150)) {
     return res.status(400).json({ error: 'Full name is required.' });
   }
@@ -79,7 +80,7 @@ export default async function handler(req, res) {
   // previously issued OTP token: its valid signature proves the ORIGINAL
   // send for this same email already passed the CAPTCHA.
   const isAuthorisedResend = previousToken && isTokenIssuedByUs(previousToken, cleanEmail);
-  if (!isAuthorisedResend && !isTestMode()) {
+  if (!isAuthorisedResend && !isTestMode() && mode !== 'submission') {
     const captchaResult = await verifyTurnstileToken(captchaToken, clientIp);
     if (!captchaResult.success) {
       return res.status(400).json({ error: captchaResult.error });
@@ -91,7 +92,7 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: 'Email verification is not available right now. Please try again later.' });
   }
 
-  let recipientName = cleanName;
+  let recipientName = cleanName || 'Participant';
 
   if (mode === 'edit') {
     // Editing requires an existing registration where this email is the
@@ -115,7 +116,7 @@ export default async function handler(req, res) {
       });
     }
     recipientName = existing.full_name;
-  } else if (isSupabaseConfigured) {
+  } else if (mode === 'register' && isSupabaseConfigured) {
     // Catch already-registered leaders BEFORE the user goes through the whole
     // OTP dance, instead of failing at the very end of the flow. One person =
     // one team, so being a member of another team also blocks registering.

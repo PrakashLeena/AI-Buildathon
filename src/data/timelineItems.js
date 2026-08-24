@@ -1,48 +1,37 @@
 export const timelineItems = [
   {
     phase: '01',
-    date: 'August 2, 2026',
-    title: 'Registration Opens',
+    date: 'August 14, 2026',
+    title: 'Registration Deadline',
     details: [
-      'Portal officially live for form entries and account creations',
-      'Define team roster (1-3 members)'
+      'Roster locks — no new profiles or members accepted after deadline',
     ]
   },
   {
     phase: '02',
-    date: 'August 10, 2026',
-    title: 'Registration Deadline',
+    date: 'August 20, 2026',
+    title: 'Kick-Off & Product Training Online Session',
     details: [
-      'Roster locks. No new profiles or members accepted after midnight',
-      'Workspace and tooling credentials dispatched'
+      'Workspace and tooling credentials dispatched to registered teams',
+      'Combined Kick-Off session and hands-on Product Training',
+      'Introduction to tools, structure, and project guidelines'
     ]
   },
   {
     phase: '03',
-    date: 'August 12, 2026,',
-    title: 'Hackathon Kick-Off Session (2 Hr)',
+    date: 'August 27, 2026',
+    title: 'Submission Deadline',
     details: [
-      'Official Alibaba Cloud introductory seminar',
-      'Training labs on Qoder, QoderWork & MuleRun'
+      'Build models, compile source repository, and submit walkthrough demo video',
+      'Submission portal closes'
     ]
   },
   {
     phase: '04',
-    date: 'August 14 – 27, 2026',
-    title: 'Submission Window Open (2 Weeks)',
+    date: 'September 4, 2026 (Tentative)',
+    title: 'Finals (Onsite Pitching)',
     details: [
-      'Build models, compile source repo, record walk-through demo video',
-      'Direct mentorship check-ins with Alibaba experts'
-    ]
-  },
-  {
-    phase: '05',
-    date: 'September 1 – 15, 2026',
-    title: 'Evaluation & Final Pitching Session',
-    details: [
-      'Top 5-8 finalist teams announced',
-      'Live pitching presentation (Video conference / physical auditorium)',
-      'Winner announcement and award ceremony'
+      'Finalist teams pitch their AI solutions onsite before judges'
     ]
   }
 ];

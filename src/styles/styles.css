@@ -1150,11 +1150,12 @@ body {
   position: absolute;
   left: 1.5rem;
   transform: translateX(-50%);
+  /* top and bottom are set dynamically by JS to span first→last circle */
   top: 0;
   bottom: 0;
-  width: 4px;
+  width: 3px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 999px 999px 0 0;
+  border-radius: 999px;
 }
 
 .timeline-progress {
@@ -1163,14 +1164,13 @@ body {
   top: 0;
   width: 100%;
   height: 0%;
-  /* Controlled dynamically by JS scroll listener */
   background: linear-gradient(
     to bottom,
     var(--primary-orange) 0%,
     var(--primary-blue) 100%
   );
   transition: height 0.1s ease-out;
-  border-radius: 999px 999px 0 0;
+  border-radius: 999px;
 }
 
 /* Glowing scroll laser pointer - Comet container */
@@ -1204,14 +1204,10 @@ body {
 .timeline-laser-tail {
   position: absolute;
   bottom: 5px;
-  /* Anchor right above core */
   left: 50%;
   transform: translateX(-50%);
   width: 14px;
-  /* Much wider for high visibility! */
   height: 0px;
-  /* Controlled dynamically by JS */
-  /* Intense neon blue to orange to transparent flame gradient */
   background: linear-gradient(
     to top,
     #ffffff 0%,
@@ -1239,43 +1235,41 @@ body {
   margin-bottom: 0;
 }
 
-/* Cyber timeline node wrapper */
+/* Timeline node wrapper — sits ON the vertical bar line */
 .timeline-dot-wrapper {
   position: absolute;
+  /* item left edge = container padding-left (3rem from container left)
+     bar is at 1.5rem from container left
+     so relative to item: 1.5rem - 3rem = -1.5rem
+     transform: translate(-50%, -50%) centers the circle on that point */
   left: -1.5rem;
-  /* Centers exactly on the vertical timeline bar line */
   top: 1.6rem;
+  transform: translate(-50%, -50%);
   z-index: 3;
 }
 
+/* Phase number circle — IS the node on the bar */
 .timeline-phase {
-  position: absolute;
-  right: 1.2rem;
-  top: 50%;
-  transform: translateY(-50%);
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: var(--text-muted);
-  border: 1px solid var(--border-glass);
-  padding: 1px 5px;
+  border: 2px solid var(--border-glass);
   background: var(--bg-dark);
-  border-radius: 10px;
-  transition: all 0.3s ease;
-}
-
-.timeline-dot {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 8px;
-  height: 8px;
-  background: var(--bg-dark);
-  border: 2px solid var(--text-muted);
-  border-radius: 50%;
-  transition: all 0.4s var(--cubic-bezier);
+  transition:
+    background 0.4s var(--cubic-bezier),
+    border-color 0.4s var(--cubic-bezier),
+    color 0.4s var(--cubic-bezier),
+    box-shadow 0.4s var(--cubic-bezier);
+  white-space: nowrap;
+  cursor: default;
+  user-select: none;
 }
 
 .timeline-content {
@@ -1332,19 +1326,13 @@ body {
 }
 
 /* Active states for scrolling timeline items */
-.timeline-item.active-timeline .timeline-dot {
+.timeline-item.active-timeline .timeline-phase {
   background: var(--primary-orange);
   border-color: var(--primary-orange);
+  color: #fff;
   box-shadow:
-    0 0 10px var(--primary-orange),
-    0 0 20px var(--primary-orange);
-  transform: translate(-50%, -50%) scale(1.3);
-}
-
-.timeline-item.active-timeline .timeline-phase {
-  border-color: var(--primary-orange);
-  color: var(--primary-orange);
-  text-shadow: 0 0 8px var(--glow-orange);
+    0 0 12px var(--glow-orange),
+    0 0 24px rgba(255, 85, 0, 0.4);
 }
 
 .timeline-item.active-timeline .timeline-content {
@@ -2751,6 +2739,7 @@ footer::before {
   .timeline-bar {
     left: 50% !important;
     border-radius: 999px;
+    /* JS sets top/bottom dynamically — no override needed */
   }
 
   .timeline-progress {
@@ -2769,21 +2758,26 @@ footer::before {
   }
 
   .timeline-dot-wrapper {
+    /* On mobile bar is centered at 50% of container width.
+       dot-wrapper left: 50% + transform: translate(-50%, -50%)
+       centers the circle on the bar at the same top: 1.6rem */
     left: 50% !important;
-    top: 1.35rem;
+    top: 1.6rem !important;
+    transform: translate(-50%, -50%) !important;
   }
 
   .timeline-item {
+    /* padding-top clears the circle (2.2rem circle, center at 1.6rem from top)
+       bottom of circle = 1.6 + 1.1 = 2.7rem, give 0.5rem breathing room */
     padding-top: 3.5rem;
     margin-bottom: 3rem;
   }
 
+  /* Phase circle on mobile — same style, slightly smaller */
   .timeline-phase {
-    right: auto;
-    left: 1.1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    background: #ffffff;
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.65rem;
   }
 
   .timeline-content {

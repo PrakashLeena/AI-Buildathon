@@ -3,12 +3,14 @@ import useHeroParticles from "../hooks/useHeroParticles.js";
 import useCountdown from "../hooks/useCountdown.js";
 import { usePortalModal } from "../context/PortalModalContext.jsx";
 
+import { REGISTRATION_CUTOFF_DATE } from "../lib/registrationDeadline.js";
+
 export default function Hero() {
   const canvasRef = useRef(null);
   const titleMainRef = useRef(null);
   const { openModal } = usePortalModal();
   useHeroParticles(canvasRef);
-  const countdown = useCountdown("August 10, 2026 23:59:59");
+  const countdown = useCountdown(REGISTRATION_CUTOFF_DATE);
 
   // Blur character entry animation for the Hero Title on load (ported 1:1).
   useEffect(() => {
@@ -168,20 +170,22 @@ export default function Hero() {
         experience needed.
       </p>
       <div className="hero-ctas" style={{ position: "relative", zIndex: 2 }}>
-        <a
-          href="#"
-          className="btn-primary open-portal-btn"
-          data-tab="register"
-          onClick={(e) => {
-            e.preventDefault();
-            openModal();
-          }}
-        >
-          Register Now{" "}
-          <span className="material-symbols-outlined" aria-hidden="true">
-            arrow_forward
-          </span>
-        </a>
+        {!countdown.closed && (
+          <a
+            href="#"
+            className="btn-primary open-portal-btn"
+            data-tab="register"
+            onClick={(e) => {
+              e.preventDefault();
+              openModal();
+            }}
+          >
+            Register Now{" "}
+            <span className="material-symbols-outlined" aria-hidden="true">
+              arrow_forward
+            </span>
+          </a>
+        )}
         <a href="#about" className="btn-secondary">
           Explore More
         </a>

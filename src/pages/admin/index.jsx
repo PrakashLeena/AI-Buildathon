@@ -202,20 +202,37 @@ export default function AdminDashboard({ adminEmail, initialRegistrations, loadE
               onChange={(e) => setQuery(e.target.value)}
               className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-4 py-2.5 text-sm placeholder:text-slate-500 focus:outline-none focus:border-brand-orange transition"
             />
-            <div className="flex gap-2 shrink-0">
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="px-4 py-2.5 rounded-lg border border-slate-700 text-sm font-semibold text-slate-200 hover:bg-slate-800 transition disabled:opacity-60 whitespace-nowrap"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg border border-slate-700 text-sm font-semibold text-slate-200 hover:bg-slate-800 transition disabled:opacity-60 whitespace-nowrap"
               >
+                <svg className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
                 {refreshing ? 'Refreshing…' : 'Refresh'}
               </button>
               <a
-                href="/api/admin/export"
-                className="inline-flex items-center px-4 py-2.5 rounded-lg bg-brand-orange text-white text-sm font-semibold hover:brightness-110 transition shadow-lg shadow-brand-orange/20 whitespace-nowrap"
+                href="/api/admin/export?type=people"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-brand-orange text-white text-sm font-semibold hover:brightness-110 transition shadow-lg shadow-brand-orange/20 whitespace-nowrap"
+                title="Download CSV of all registered individuals (leads and team members) with their names and emails"
               >
-                Export CSV
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Export All People CSV
+              </a>
+              <a
+                href="/api/admin/export?type=teams"
+                className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-lg border border-slate-700 bg-slate-800/80 text-slate-200 text-sm font-semibold hover:bg-slate-700 hover:text-white transition whitespace-nowrap"
+                title="Download CSV of team registrations with members in separate columns"
+              >
+                <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Export Teams CSV
               </a>
             </div>
           </div>

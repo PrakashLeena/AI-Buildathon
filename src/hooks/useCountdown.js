@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
+import { REGISTRATION_CUTOFF_DATE } from '../lib/registrationDeadline.js';
 
 /**
- * Countdown timer hook - mirrors the original app.js logic
- * (target deadline: August 10, 2026 23:59:59 local time).
+ * Countdown timer hook - target deadline: August 15, 2026 07:00:00 local time.
  */
-export default function useCountdown(targetDateString) {
+export default function useCountdown(targetDateString = REGISTRATION_CUTOFF_DATE) {
   const [timeLeft, setTimeLeft] = useState({ days: '00', hours: '00', minutes: '00', seconds: '00', closed: false });
 
   useEffect(() => {

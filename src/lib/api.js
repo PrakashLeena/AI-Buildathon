@@ -8,13 +8,50 @@
 // will redirect - and browsers refuse to follow a redirect on a CORS
 // preflight (OPTIONS) request, causing a confusing CORS error instead of
 // the real cause.
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || '/api').replace(/\/+$/, '');
+function getApiUrl(path) {
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+
+  // In the browser, Next.js serves both the frontend and /api routes on the SAME origin.
+  // Using relative '/api' avoids DNS resolution failures (ERR_NAME_NOT_RESOLVED).
+  if (typeof window !== 'undefined') {
+    const customBase = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (customBase && !customBase.includes('yourdomain.com') && !customBase.includes('example.com')) {
+      if (customBase.startsWith('http://') || customBase.startsWith('https://')) {
+        return `${customBase.replace(/\/+$/, '')}${cleanPath}`;
+      }
+    }
+    return `/api${cleanPath.replace(/^\/api/, '')}`;
+  }
+
+  const base = (process.env.NEXT_PUBLIC_API_BASE_URL || '/api').replace(/\/+$/, '');
+  return `${base}${cleanPath}`;
+}
 
 async function request(path, options = {}) {
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options
-  });
+  const url = getApiUrl(path);
+  let res;
+
+  try {
+    res = await fetch(url, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options
+    });
+  } catch (networkErr) {
+    // If an external base URL failed DNS resolution, fallback immediately to local relative '/api'
+    if (typeof window !== 'undefined' && (url.startsWith('http://') || url.startsWith('https://'))) {
+      try {
+        const fallbackUrl = `/api${path.startsWith('/') ? path : `/${path}`}`.replace(/^\/api\/api/, '/api');
+        res = await fetch(fallbackUrl, {
+          headers: { 'Content-Type': 'application/json' },
+          ...options
+        });
+      } catch (fallbackErr) {
+        throw new Error(`Network error: ${networkErr.message || 'Unable to reach server'}`);
+      }
+    } else {
+      throw new Error(`Network error: ${networkErr.message || 'Unable to reach server'}`);
+    }
+  }
 
   const contentType = res.headers.get('content-type') || '';
   const data = contentType.includes('application/json') ? await res.json() : null;

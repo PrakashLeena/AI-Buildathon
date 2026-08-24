@@ -119,6 +119,22 @@ const nextConfig = {
         headers: corsHeaders()
       },
       {
+        source: '/api/submissions/:path*',
+        headers: corsHeaders()
+      },
+      {
+        source: '/api/submissions',
+        headers: corsHeaders()
+      },
+      {
+        source: '/api/teams',
+        headers: corsHeaders()
+      },
+      {
+        source: '/api/teams/:path*',
+        headers: corsHeaders()
+      },
+      {
         // Firebase's signInWithPopup() polls `popup.closed` on the Google
         // sign-in popup window to detect when it's dismissed. Vercel (and
         // some browsers by default) apply a strict Cross-Origin-Opener-Policy

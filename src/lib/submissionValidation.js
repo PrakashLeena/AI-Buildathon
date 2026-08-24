@@ -1,4 +1,4 @@
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const GMAIL_RE = /^[^\s@]+@gmail\.com$/i;
 const PHONE_RE = /^(\+?[0-9]{1,4}[\s-]?)?([0-9\s-]{7,15})$/;
 
 /**
@@ -9,12 +9,12 @@ export function validateSubmissionForm(form) {
   const errors = {};
 
   // 1. Participant Details
-  // Email
+  // Email (must be @gmail.com)
   const email = (form.participantEmail || '').trim();
   if (!email) {
     errors.participantEmail = 'Participant email address is required.';
-  } else if (!EMAIL_RE.test(email) || email.length > 254) {
-    errors.participantEmail = 'Please enter a valid email address (e.g. name@domain.com).';
+  } else if (!GMAIL_RE.test(email) || email.length > 254) {
+    errors.participantEmail = 'Please enter a valid Gmail address (e.g. participant@gmail.com).';
   }
 
   // Team
@@ -50,11 +50,12 @@ export function validateSubmissionForm(form) {
   const brief = (form.projectBrief || '').trim();
   if (!brief) {
     errors.projectBrief = 'Please provide an overview and background for your project.';
-  } else if (brief.length < 50) {
-    errors.projectBrief = `Project brief is too short (${brief.length}/50 min characters). Please provide more background, problem details, and objectives.`;
-  } else if (brief.length > 5000) {
-    errors.projectBrief = `Project brief is too long (${brief.length}/5000 max characters).`;
+  } else if (brief.length < 20) {
+    errors.projectBrief = `Project brief is too short (${brief.length}/20 min characters). Please provide a brief overview.`;
+  } else if (brief.length > 1000) {
+    errors.projectBrief = `Project brief cannot exceed 1000 characters (${brief.length}/1000).`;
   }
 
   return errors;
 }
+

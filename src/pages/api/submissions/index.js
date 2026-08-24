@@ -4,7 +4,7 @@ import { checkRateLimit } from '../../../lib/rateLimit.js';
 import { getClientIp } from '../../../lib/requestIp.js';
 import { isSupabaseConfigured, supabaseAdmin } from '../../../lib/supabaseAdmin.js';
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const GMAIL_RE = /^[^\s@]+@gmail\.com$/i;
 const PHONE_RE = /^(\+?[0-9]{1,4}[\s-]?)?([0-9\s-]{7,15})$/;
 
 const RATE_LIMIT = { max: 10, windowMs: 10 * 60 * 1000 };
@@ -48,8 +48,8 @@ export default async function handler(req, res) {
   if (!cleanEmail) {
     return res.status(400).json({ error: 'Participant email address is required.' });
   }
-  if (!EMAIL_RE.test(cleanEmail) || cleanEmail.length > 254) {
-    return res.status(400).json({ error: 'Please enter a valid participant email address.' });
+  if (!GMAIL_RE.test(cleanEmail) || cleanEmail.length > 254) {
+    return res.status(400).json({ error: 'Please enter a valid Gmail address (e.g. participant@gmail.com).' });
   }
 
   const cleanTeam = typeof team_name === 'string' ? team_name.trim() : '';
@@ -86,14 +86,14 @@ export default async function handler(req, res) {
       error: 'Project brief and background is required.'
     });
   }
-  if (cleanBrief.length < 50) {
+  if (cleanBrief.length < 20) {
     return res.status(400).json({
-      error: 'Please provide a more detailed project brief (minimum 50 characters).'
+      error: 'Please provide a brief overview of your project (minimum 20 characters).'
     });
   }
-  if (cleanBrief.length > 5000) {
+  if (cleanBrief.length > 1000) {
     return res.status(400).json({
-      error: 'Project brief exceeds the maximum length of 5,000 characters.'
+      error: 'Project brief exceeds the maximum length of 1,000 characters.'
     });
   }
 

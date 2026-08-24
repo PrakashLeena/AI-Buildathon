@@ -319,7 +319,7 @@ export default function SubmissionForm() {
                   <label htmlFor={emailInputId} className="submission-field-label">
                     Participant Email Address <span className="req-star">*</span>
                   </label>
-                  <span className="submission-field-desc">Enter the email address of the participant.</span>
+                  <span className="submission-field-desc">Enter the participant’s Gmail address (@gmail.com).</span>
                   <div className="submission-input-wrapper">
                     <span className="material-symbols-outlined input-icon" aria-hidden="true">
                       mail
@@ -328,7 +328,7 @@ export default function SubmissionForm() {
                       id={emailInputId}
                       type="email"
                       className="submission-input"
-                      placeholder="e.g. participant@stu.kln.ac.lk"
+                      placeholder="e.g. participant@gmail.com"
                       value={form.participantEmail}
                       onChange={(e) => handleChange("participantEmail", e.target.value)}
                       onBlur={() => handleBlur("participantEmail")}
@@ -590,22 +590,23 @@ export default function SubmissionForm() {
                   <textarea
                     id={projectBriefId}
                     rows={6}
+                    maxLength={1000}
                     className="submission-textarea"
-                    placeholder="Provide your project overview here...&#10;&#10;1. Background & Context: What inspired this project?&#10;2. Problem Statement: What critical challenge or need are you solving?&#10;3. Key Objectives: What are the primary goals, AI components, and impact of your solution?"
+                    placeholder="Provide your project overview here... (up to 1,000 characters)&#10;&#10;1. Background & Context: What inspired this project?&#10;2. Problem Statement: What critical challenge or need are you solving?&#10;3. Key Objectives: What are the primary goals, AI components, and impact of your solution?"
                     value={form.projectBrief}
                     onChange={(e) => handleChange("projectBrief", e.target.value)}
                     onBlur={() => handleBlur("projectBrief")}
                   ></textarea>
                   <div className="textarea-footer">
-                    <span className={`char-counter ${form.projectBrief.trim().length < 50 ? "counter-low" : "counter-ok"}`}>
-                      {form.projectBrief.trim().length} / 50 min characters ({form.projectBrief.length} total)
+                    <span className={`char-counter ${form.projectBrief.length > 1000 ? "counter-low" : "counter-ok"}`}>
+                      {form.projectBrief.length} / 1000 characters
                     </span>
-                    {form.projectBrief.trim().length >= 50 && (
+                    {form.projectBrief.trim().length >= 20 && form.projectBrief.length <= 1000 && (
                       <span className="char-badge-ok">
                         <span className="material-symbols-outlined" aria-hidden="true">
                           check_circle
                         </span>
-                        Minimum length met
+                        Ready for submission
                       </span>
                     )}
                   </div>

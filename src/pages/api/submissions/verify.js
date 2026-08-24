@@ -4,7 +4,7 @@ import { checkRateLimit } from '../../../lib/rateLimit.js';
 import { getClientIp } from '../../../lib/requestIp.js';
 import { isSupabaseConfigured, supabaseAdmin } from '../../../lib/supabaseAdmin.js';
 
-const GMAIL_RE = /^[^\s@]+@gmail\.com$/i;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const RATE_LIMIT = { max: 15, windowMs: 10 * 60 * 1000 };
 
 const norm = (v) => String(v || '').trim().toLowerCase();
@@ -27,8 +27,8 @@ export default async function handler(req, res) {
   const { email, otp, otpToken } = req.body || {};
   const cleanEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
 
-  if (!cleanEmail || !GMAIL_RE.test(cleanEmail)) {
-    return res.status(400).json({ error: 'A valid @gmail.com address is required.' });
+  if (!cleanEmail || !EMAIL_RE.test(cleanEmail) || cleanEmail.length > 254) {
+    return res.status(400).json({ error: 'A valid email address is required.' });
   }
 
   if (!otp || typeof otp !== 'string' || !/^\d{6}$/.test(otp.trim())) {

@@ -323,7 +323,7 @@ export default function SubmissionForm() {
                   <div className="submission-step-num">1</div>
                   <div className="submission-step-info">
                     <h4>Participant Details</h4>
-                    <p>Enter your Gmail address and WhatsApp number to get started.</p>
+                    <p>Enter your email address and WhatsApp number to get started.</p>
                   </div>
                 </div>
 
@@ -342,7 +342,7 @@ export default function SubmissionForm() {
                     <label htmlFor={emailInputId} className="submission-field-label">
                       Participant Email Address <span className="req-star">*</span>
                     </label>
-                    <span className="submission-field-desc">Enter the email address of the participant (@gmail.com).</span>
+                    <span className="submission-field-desc">Enter the registered email address of the participant (e.g. @stu.kln.ac.lk, @gmail.com).</span>
                     <div className="submission-input-wrapper">
                       <span className="material-symbols-outlined input-icon" aria-hidden="true">
                         mail
@@ -351,7 +351,7 @@ export default function SubmissionForm() {
                         id={emailInputId}
                         type="email"
                         className="submission-input"
-                        placeholder="e.g. participant@gmail.com"
+                        placeholder="e.g. name@stu.kln.ac.lk or name@gmail.com"
                         value={form.participantEmail}
                         onChange={(e) => handleChange("participantEmail", e.target.value)}
                         onBlur={() => handleBlur("participantEmail")}

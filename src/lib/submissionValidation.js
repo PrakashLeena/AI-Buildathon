@@ -1,4 +1,4 @@
-const GMAIL_RE = /^[^\s@]+@gmail\.com$/i;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^(\+?[0-9]{1,4}[\s-]?)?([0-9\s-]{7,15})$/;
 
 /**
@@ -9,12 +9,12 @@ export function validateSubmissionForm(form) {
   const errors = {};
 
   // 1. Participant Details
-  // Email (must be @gmail.com)
+  // Email (supports any valid email, e.g. @stu.kln.ac.lk, @gmail.com, etc.)
   const email = (form.participantEmail || '').trim();
   if (!email) {
     errors.participantEmail = 'Participant email address is required.';
-  } else if (!GMAIL_RE.test(email) || email.length > 254) {
-    errors.participantEmail = 'Please enter a valid Gmail address (e.g. participant@gmail.com).';
+  } else if (!EMAIL_RE.test(email) || email.length > 254) {
+    errors.participantEmail = 'Please enter a valid email address (e.g. name@stu.kln.ac.lk or name@gmail.com).';
   }
 
   // WhatsApp Number

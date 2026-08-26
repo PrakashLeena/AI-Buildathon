@@ -53,23 +53,31 @@ export default async function handler(req, res) {
   }
 
   let cleanTeam = typeof team_name === 'string' ? team_name.trim() : '';
+  // The team's true identity for storage/lookup purposes is the
+  // registration row's id, not the team_name string. Two different teams
+  // can share a team_name (nothing currently prevents that), so matching
+  // submissions by name alone let one team's brief silently overwrite
+  // another's.
+  let matchedRegistrationId = null;
   if (isSupabaseConfigured) {
     let matchedRegistration = false;
     try {
       const { data: rows } = await supabaseAdmin
         .from('registrations')
-        .select('team_name, student_email, members');
+        .select('id, team_name, student_email, members');
       if (Array.isArray(rows)) {
         for (const row of rows) {
           if (String(row.student_email || '').trim().toLowerCase() === cleanEmail) {
             cleanTeam = row.team_name;
             matchedRegistration = true;
+            matchedRegistrationId = row.id;
             break;
           }
           const members = Array.isArray(row.members) ? row.members : [];
           if (members.some((m) => String(m?.email || '').trim().toLowerCase() === cleanEmail)) {
             cleanTeam = row.team_name;
             matchedRegistration = true;
+            matchedRegistrationId = row.id;
             break;
           }
         }
@@ -135,11 +143,11 @@ export default async function handler(req, res) {
   
   if (isSupabaseConfigured) {
     try {
-      // Check if team already submitted a brief
+      // Check if this team (by registration id, not name) already submitted a brief
       const { data: existing, error: findError } = await supabaseAdmin
         .from('submissions')
         .select('id, team_name')
-        .ilike('team_name', cleanTeam)
+        .eq('registration_id', matchedRegistrationId)
         .maybeSingle();
 
       if (findError) {
@@ -156,6 +164,7 @@ export default async function handler(req, res) {
           .update({
             participant_email: cleanEmail,
             team_name: cleanTeam,
+            registration_id: matchedRegistrationId,
             whatsapp_number: cleanPhone,
             project_brief: cleanBrief,
             updated_at: new Date().toISOString()
@@ -172,6 +181,7 @@ export default async function handler(req, res) {
           .insert({
             participant_email: cleanEmail,
             team_name: cleanTeam,
+            registration_id: matchedRegistrationId,
             whatsapp_number: cleanPhone,
             project_brief: cleanBrief,
             created_at: new Date().toISOString(),

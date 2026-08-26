@@ -4,6 +4,7 @@ import useCountdown from "../hooks/useCountdown.js";
 import { usePortalModal } from "../context/PortalModalContext.jsx";
 
 import { REGISTRATION_CUTOFF_DATE } from "../lib/registrationDeadline.js";
+import { SUBMISSION_CUTOFF_DATE } from "../lib/submissionDeadline.js";
 
 export default function Hero() {
   const canvasRef = useRef(null);
@@ -11,6 +12,7 @@ export default function Hero() {
   const { openModal } = usePortalModal();
   useHeroParticles(canvasRef);
   const countdown = useCountdown(REGISTRATION_CUTOFF_DATE);
+  const submissionCountdown = useCountdown(SUBMISSION_CUTOFF_DATE);
 
   // Blur character entry animation for the Hero Title on load (ported 1:1).
   useEffect(() => {
@@ -205,21 +207,7 @@ export default function Hero() {
         className="countdown-container"
         style={{ position: "relative", zIndex: 2 }}
       >
-        {countdown.closed ? (
-          <>
-            <div className="countdown-title">Registration Closed</div>
-            <div
-              style={{
-                fontSize: "1.1rem",
-                fontWeight: 600,
-                color: "var(--primary-orange)",
-                marginTop: "0.5rem",
-              }}
-            >
-              The Hackathon has officially kicked off!
-            </div>
-          </>
-        ) : (
+        {!countdown.closed ? (
           <>
             <div className="countdown-title">
               Registration Deadline Countdown
@@ -249,6 +237,52 @@ export default function Hero() {
                 </span>
                 <span className="countdown-label">Secs</span>
               </div>
+            </div>
+          </>
+        ) : !submissionCountdown.closed ? (
+          <>
+            <div className="countdown-title">
+              Project Submission Deadline Countdown
+            </div>
+            <div className="countdown-grid">
+              <div className="countdown-item">
+                <span className="countdown-value" id="sub-days">
+                  {submissionCountdown.days}
+                </span>
+                <span className="countdown-label">Days</span>
+              </div>
+              <div className="countdown-item">
+                <span className="countdown-value" id="sub-hours">
+                  {submissionCountdown.hours}
+                </span>
+                <span className="countdown-label">Hours</span>
+              </div>
+              <div className="countdown-item">
+                <span className="countdown-value" id="sub-minutes">
+                  {submissionCountdown.minutes}
+                </span>
+                <span className="countdown-label">Mins</span>
+              </div>
+              <div className="countdown-item">
+                <span className="countdown-value" id="sub-seconds">
+                  {submissionCountdown.seconds}
+                </span>
+                <span className="countdown-label">Secs</span>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="countdown-title">Submissions Closed</div>
+            <div
+              style={{
+                fontSize: "1.1rem",
+                fontWeight: 600,
+                color: "var(--primary-orange)",
+                marginTop: "0.5rem",
+              }}
+            >
+              The project submission window has closed.
             </div>
           </>
         )}

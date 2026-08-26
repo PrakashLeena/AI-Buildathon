@@ -123,6 +123,19 @@ export function getRegisteredTeams() {
 }
 
 /**
+ * Admin-only: edit any registration in full, including the team name.
+ * Payload: { id, full_name, student_email, student_id, faculty, department,
+ * year_of_study, team_name, team_size, members }.
+ */
+export function adminUpdateRegistration(payload) {
+  return request('/admin/registrations/update', {
+    method: 'POST',
+    credentials: 'same-origin',
+    body: JSON.stringify(payload)
+  });
+}
+
+/**
  * Verify OTP and auto-detect team details for submission.
  * Payload: { email, otp, otpToken }.
  */

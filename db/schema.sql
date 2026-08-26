@@ -54,4 +54,49 @@ create table if not exists submissions (
 
 alter table submissions enable row level security;
 
+-- MIGRATION (2026-08): fixes a bug where two teams that happened to share
+-- the same team_name would silently overwrite each other's project brief,
+-- because `submissions` was keyed on the team_name STRING (see the `unique`
+-- constraint above) instead of a stable identifier. This links each
+-- submission to its actual registration row instead, so identity no longer
+-- depends on a human-typed name.
+--
+-- Purely additive - no rows are deleted, no existing data is overwritten.
+-- Run this once in the Supabase SQL Editor.
+
+-- 1. Add the new column (nullable at first, so existing rows aren't rejected).
+alter table submissions add column if not exists registration_id uuid references registrations(id);
+
+-- 2. Backfill registration_id for existing submissions by matching the
+--    submitter's participant_email against the registration lead or any
+--    team member's email. This correctly tells apart teams that share a
+--    team_name, unlike the old ilike(team_name) matching.
+update submissions s
+set registration_id = r.id
+from registrations r
+where s.registration_id is null
+  and (
+    lower(r.student_email) = lower(s.participant_email)
+    or exists (
+      select 1 from jsonb_array_elements(r.members) as m
+      where lower(m->>'email') = lower(s.participant_email)
+    )
+  );
+
+-- 3. Drop the old name-based unique constraint - this was the actual bug,
+--    it made the app treat "same name" as "same team".
+alter table submissions drop constraint if exists submissions_team_name_key;
+
+-- 4. Enforce true one-submission-per-team using the stable id instead.
+--    Partial index so any legacy row that couldn't be backfilled (e.g. the
+--    submitter's email doesn't match any registration) doesn't block
+--    others - check for those with the query below and resolve manually.
+create unique index if not exists submissions_registration_id_key
+  on submissions (registration_id)
+  where registration_id is not null;
+
+-- 5. Sanity check after running the above - should return zero rows once
+--    every historical submission has been matched to a team:
+--    select id, team_name, participant_email from submissions where registration_id is null;
+
 

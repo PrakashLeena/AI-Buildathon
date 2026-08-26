@@ -3,6 +3,7 @@ import { Fragment, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { getAdminFromRequest } from '../../lib/adminAuth.js';
 import { isSupabaseConfigured, supabaseAdmin, supabaseConfigError } from '../../lib/supabaseAdmin.js';
+import EditRegistrationModal from '../../components/admin/EditRegistrationModal.jsx';
 
 export async function getServerSideProps({ req }) {
   const admin = await getAdminFromRequest(req);
@@ -84,6 +85,7 @@ export default function AdminDashboard({ adminEmail, initialRegistrations, initi
   const [regSortKey, setRegSortKey] = useState('created_at');
   const [regSortDir, setRegSortDir] = useState('desc');
   const [expandedRegId, setExpandedRegId] = useState(null);
+  const [editingReg, setEditingReg] = useState(null);
 
   // Submissions state
   const [submissions, setSubmissions] = useState(initialSubmissions || []);
@@ -109,6 +111,24 @@ export default function AdminDashboard({ adminEmail, initialRegistrations, initi
     });
     return { totalTeams, totalParticipants, facultyCount: facultySet.size, bySize };
   }, [registrations]);
+
+  // Names shared by 2+ teams - flagged in the table so admins can spot and
+  // resolve the exact collision that used to make submissions overwrite
+  // each other (nothing currently stops two teams registering the same name).
+  const duplicateTeamNames = useMemo(() => {
+    const counts = new Map();
+    registrations.forEach((r) => {
+      const key = (r.team_name || '').trim().toLowerCase();
+      if (!key) return;
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+    return new Set([...counts.entries()].filter(([, count]) => count > 1).map(([key]) => key));
+  }, [registrations]);
+
+  const handleRegistrationSaved = (updated) => {
+    setRegistrations((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+    setEditingReg(null);
+  };
 
   // Stats for Submissions
   const subStats = useMemo(() => {
@@ -419,37 +439,50 @@ export default function AdminDashboard({ adminEmail, initialRegistrations, initi
               {/* Table */}
               <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl shadow-black/40" style={{ minHeight: '420px' }}>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm table-fixed min-w-[700px]">
+                  <table className="w-full text-sm table-fixed min-w-[820px]">
                     <thead>
                       <tr className="border-b-2 border-slate-700 text-left text-slate-400 text-xs uppercase tracking-widest bg-slate-800/60">
-                        <th className="px-3 py-3 cursor-pointer select-none font-bold w-[20%]" onClick={() => handleRegSort('team_name')}>
+                        <th className="px-3 py-3 cursor-pointer select-none font-bold w-[17%]" onClick={() => handleRegSort('team_name')}>
                           Team{regSortIndicator('team_name')}
                         </th>
-                        <th className="px-3 py-3 cursor-pointer select-none font-bold w-[24%]" onClick={() => handleRegSort('full_name')}>
+                        <th className="px-3 py-3 cursor-pointer select-none font-bold w-[21%]" onClick={() => handleRegSort('full_name')}>
                           Lead Builder{regSortIndicator('full_name')}
                         </th>
-                        <th className="px-3 py-3 cursor-pointer select-none font-bold w-[20%]" onClick={() => handleRegSort('faculty')}>
+                        <th className="px-3 py-3 cursor-pointer select-none font-bold w-[16%]" onClick={() => handleRegSort('faculty')}>
                           Faculty{regSortIndicator('faculty')}
                         </th>
-                        <th className="px-3 py-3 font-bold w-[8%] text-center">Size</th>
-                        <th className="px-3 py-3 cursor-pointer select-none font-bold w-[16%]" onClick={() => handleRegSort('created_at')}>
+                        <th className="px-3 py-3 font-bold w-[7%] text-center">Size</th>
+                        <th className="px-3 py-3 cursor-pointer select-none font-bold w-[14%]" onClick={() => handleRegSort('created_at')}>
                           Registered{regSortIndicator('created_at')}
                         </th>
-                        <th className="px-3 py-3 font-bold w-[12%] text-center">Members</th>
+                        <th className="px-3 py-3 font-bold w-[11%] text-center">Members</th>
+                        <th className="px-3 py-3 font-bold w-[14%] text-center">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredRegistrations.length === 0 && (
                         <tr>
-                          <td colSpan={6} className="px-6 py-16 text-center text-slate-500 text-base">
+                          <td colSpan={7} className="px-6 py-16 text-center text-slate-500 text-base">
                             No registrations {regQuery ? 'match your search' : 'found'}.
                           </td>
                         </tr>
                       )}
-                      {filteredRegistrations.map((r) => (
+                      {filteredRegistrations.map((r) => {
+                        const isDuplicateName = duplicateTeamNames.has((r.team_name || '').trim().toLowerCase());
+                        return (
                         <Fragment key={r.id}>
                           <tr className="border-b border-slate-800/60 hover:bg-slate-800/40 transition-colors duration-150">
-                            <td className="px-3 py-3 font-bold text-white text-sm break-words">{r.team_name}</td>
+                            <td className="px-3 py-3 font-bold text-white text-sm break-words">
+                              {r.team_name}
+                              {isDuplicateName && (
+                                <span
+                                  className="ml-2 inline-block align-middle text-[10px] font-bold uppercase tracking-wider text-red-300 bg-red-500/20 border border-red-500/40 px-1.5 py-0.5 rounded"
+                                  title="Another team shares this exact name - rename one of them to avoid confusion."
+                                >
+                                  Duplicate name
+                                </span>
+                              )}
+                            </td>
                             <td className="px-3 py-3">
                               <p className="text-slate-100 font-semibold text-sm">{r.full_name}</p>
                               <a href={`mailto:${r.student_email}`} className="text-brand-orange hover:underline text-xs mt-0.5 break-all block">
@@ -481,10 +514,19 @@ export default function AdminDashboard({ adminEmail, initialRegistrations, initi
                                 <span className="text-slate-600 text-xs">Solo</span>
                               )}
                             </td>
+                            <td className="px-3 py-3 text-center">
+                              <button
+                                type="button"
+                                onClick={() => setEditingReg(r)}
+                                className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80 text-slate-200 hover:bg-slate-700 hover:text-white transition"
+                              >
+                                Edit
+                              </button>
+                            </td>
                           </tr>
                           {expandedRegId === r.id && (
                             <tr className="bg-slate-950/60">
-                              <td colSpan={6} className="px-6 py-5">
+                              <td colSpan={7} className="px-6 py-5">
                                 <p className="text-xs uppercase tracking-wider text-slate-500 mb-3 font-semibold">
                                   Department: <span className="text-slate-300">{r.department}</span> · Year of Study:{' '}
                                   <span className="text-slate-300">{r.year_of_study}</span>
@@ -519,7 +561,8 @@ export default function AdminDashboard({ adminEmail, initialRegistrations, initi
                             </tr>
                           )}
                         </Fragment>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -773,6 +816,14 @@ export default function AdminDashboard({ adminEmail, initialRegistrations, initi
             </div>
           )}
         </main>
+
+        {editingReg && (
+          <EditRegistrationModal
+            registration={editingReg}
+            onClose={() => setEditingReg(null)}
+            onSaved={handleRegistrationSaved}
+          />
+        )}
       </div>
     </>
   );

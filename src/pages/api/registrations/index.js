@@ -93,6 +93,23 @@ export default async function handler(req, res) {
       });
     }
 
+    // 0b) Team names must be unique (case-insensitive). This used to be
+    // unchecked, which let two unrelated teams register under the same
+    // name and made later submissions ambiguous (see the submissions table
+    // migration in db/schema.sql).
+    const { data: nameClash, error: nameClashError } = await supabaseAdmin
+      .from('registrations')
+      .select('id')
+      .ilike('team_name', data.team_name)
+      .maybeSingle();
+    if (nameClashError) {
+      console.error('[api/registrations] name-clash lookup failed:', nameClashError.message);
+      return res.status(500).json({ error: 'Could not verify team name availability. Please try again.' });
+    }
+    if (nameClash) {
+      return res.status(409).json({ error: `Team name "${data.team_name}" is already taken. Please choose a different name.` });
+    }
+
     // 1) Create the Supabase Auth user server-side using the service role key.
     const { data: createdUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: data.email,

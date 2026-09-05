@@ -35,7 +35,7 @@ export default async function handler(req, res) {
   try {
     const { data: rows, error: regError } = await supabaseAdmin
       .from('registrations')
-      .select('id, full_name, student_email, members');
+      .select('id, full_name, student_email, members, team_name');
 
     if (regError) {
       console.error('[api/project-submissions/verify-email] lookup error:', regError.message);
@@ -44,11 +44,13 @@ export default async function handler(req, res) {
 
     let registrationId = null;
     let participantName = null;
+    let teamName = null;
 
     for (const row of rows || []) {
       if (String(row.student_email || '').trim().toLowerCase() === cleanEmail) {
         registrationId = row.id;
         participantName = row.full_name;
+        teamName = row.team_name;
         break;
       }
       const members = Array.isArray(row.members) ? row.members : [];
@@ -56,6 +58,7 @@ export default async function handler(req, res) {
       if (matched) {
         registrationId = row.id;
         participantName = matched.name;
+        teamName = row.team_name;
         break;
       }
     }
@@ -81,6 +84,8 @@ export default async function handler(req, res) {
       success: true,
       registrationId,
       participantName,
+      participantEmail: cleanEmail,
+      teamName,
       hasExistingSubmission: !!existingSub
     });
   } catch (error) {

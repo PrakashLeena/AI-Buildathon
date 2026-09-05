@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import useHeaderScroll from '../hooks/useHeaderScroll.js';
 
 export default function Header() {
@@ -43,7 +44,7 @@ export default function Header() {
           <a href="#prizes" onClick={() => setMenuOpen(false)}>Prizes</a>
         </li>
         <li>
-          <a href="/submit-project" onClick={() => setMenuOpen(false)}>Final Submission Portal</a>
+          <Link href="/submit-project" onClick={() => setMenuOpen(false)}>Final Submission Portal</Link>
         </li>
         <li>
           <a

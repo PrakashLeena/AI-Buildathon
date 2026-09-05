@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import Link from "next/link";
 import useHeroParticles from "../hooks/useHeroParticles.js";
 import useCountdown from "../hooks/useCountdown.js";
 import { usePortalModal } from "../context/PortalModalContext.jsx";
@@ -171,7 +172,7 @@ export default function Hero() {
         Learn, build, and compete using industry-grade tools, no prior
         experience needed.
       </p>
-      <div className="hero-ctas" style={{ position: "relative", zIndex: 2 }}>
+      <div className="hero-ctas" style={{ position: "relative", zIndex: 10 }}>
         {!countdown.closed ? (
           <a
             href="#"
@@ -188,15 +189,16 @@ export default function Hero() {
             </span>
           </a>
         ) : (
-          <a
+          <Link
             href="/submit-project"
             className="btn-primary"
+            style={{ cursor: "pointer", position: "relative", zIndex: 10, textDecoration: "none" }}
           >
             Go to Final Project Submission Portal{" "}
             <span className="material-symbols-outlined" aria-hidden="true">
               arrow_forward
             </span>
-          </a>
+          </Link>
         )}
         <a href="#about" className="btn-secondary">
           Explore More

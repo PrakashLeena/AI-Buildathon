@@ -8,6 +8,8 @@ export default function ProjectSubmissionForm({
   participantName, 
   teamName,
   hasExistingSubmission,
+  otp: initialOtp,
+  otpToken: initialOtpToken,
   onReset 
 }) {
   const [formData, setFormData] = useState({
@@ -28,19 +30,19 @@ export default function ProjectSubmissionForm({
   const [error, setError] = useState('');
   
   // Overwrite & OTP states
-  const [isOverwriteFlow, setIsOverwriteFlow] = useState(hasExistingSubmission);
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState(initialOtp || '');
+  const [otpToken, setOtpToken] = useState(initialOtpToken || '');
   const [captchaToken, setCaptchaToken] = useState('');
-  const [otpToken, setOtpToken] = useState('');
+  const [needsFreshOtp, setNeedsFreshOtp] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSendOtp = async (e) => {
-    e.preventDefault();
+  const handleSendFreshOtp = async (e) => {
+    if (e) e.preventDefault();
     setError('');
     setLoading(true);
 
@@ -61,6 +63,7 @@ export default function ProjectSubmissionForm({
       }
       setOtpToken(data.otpToken);
       setOtpSent(true);
+      setNeedsFreshOtp(false);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -72,13 +75,9 @@ export default function ProjectSubmissionForm({
     e.preventDefault();
     setError('');
 
-    if (hasExistingSubmission && !otpSent) {
-      setError('Please click "Send Verification Code" and enter your OTP to overwrite your previous submission.');
-      return;
-    }
-
-    if (hasExistingSubmission && otpSent && (!otp || otp.trim().length !== 6)) {
-      setError('Please enter the 6-digit verification code sent to your email.');
+    if (hasExistingSubmission && (!otp || !otpToken)) {
+      setNeedsFreshOtp(true);
+      setError('Please verify with a security code before updating existing deliverables.');
       return;
     }
 
@@ -101,8 +100,8 @@ export default function ProjectSubmissionForm({
 
       const data = await res.json();
       if (!res.ok) {
-        if (res.status === 409) {
-          setIsOverwriteFlow(true);
+        if (data.error && data.error.toLowerCase().includes('otp')) {
+          setNeedsFreshOtp(true);
         }
         throw new Error(data.error || 'Failed to submit project.');
       }
@@ -115,31 +114,51 @@ export default function ProjectSubmissionForm({
     }
   };
 
+  const inputStyle = {
+    background: 'rgba(3, 7, 18, 0.75)',
+    borderColor: 'rgba(255, 85, 0, 0.28)',
+    color: '#ffffff'
+  };
+
   if (success) {
     return (
-      <div className="submission-card" style={{ textAlign: 'center', padding: '3.5rem 2rem' }}>
+      <div
+        className="submission-card"
+        style={{
+          textAlign: 'center',
+          padding: '3.5rem 2rem',
+          background: 'rgba(15, 23, 42, 0.92)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1.5px solid rgba(255, 85, 0, 0.35)',
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(255, 85, 0, 0.15)',
+          borderRadius: '20px',
+          color: '#ffffff'
+        }}
+      >
         <div
           style={{
             width: '72px',
             height: '72px',
             borderRadius: '50%',
-            background: '#ecfdf5',
+            background: 'rgba(16, 185, 129, 0.15)',
             border: '2px solid #10b981',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: '#10b981',
-            marginBottom: '1.5rem'
+            marginBottom: '1.5rem',
+            boxShadow: '0 0 25px rgba(16, 185, 129, 0.3)'
           }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: '40px' }}>
             check_circle
           </span>
         </div>
-        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.2rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.75rem' }}>
           Submission Received!
         </h2>
-        <p style={{ fontSize: '1.05rem', color: 'var(--text-secondary)', maxWidth: '540px', margin: '0 auto 2rem', lineHeight: 1.6 }}>
+        <p style={{ fontSize: '1.05rem', color: '#cbd5e1', maxWidth: '560px', margin: '0 auto 2.5rem', lineHeight: 1.6 }}>
           Thank you, <strong>{participantName}</strong>. Your final project deliverables for <strong>{teamName || 'your team'}</strong> have been saved successfully.
         </p>
         <div style={{ display: 'inline-flex', gap: '1rem', justifyContent: 'center' }}>
@@ -158,35 +177,43 @@ export default function ProjectSubmissionForm({
   return (
     <div>
       {/* Detected Team Header Card */}
-      <div className="detected-team-card">
-        <div className="team-card-header">
+      <div
+        className="detected-team-card"
+        style={{
+          background: 'rgba(255, 85, 0, 0.08)',
+          border: '1.5px solid rgba(255, 85, 0, 0.35)',
+          boxShadow: '0 15px 35px rgba(0, 0, 0, 0.5)',
+          color: '#ffffff'
+        }}
+      >
+        <div className="team-card-header" style={{ borderBottomColor: 'rgba(255, 85, 0, 0.25)' }}>
           <div className="team-badge-icon">
             <span className="material-symbols-outlined">groups</span>
           </div>
           <div style={{ flex: 1 }}>
             <span className="team-eyebrow">VERIFIED TEAM CREDENTIALS</span>
-            <h3 className="team-name-title">{teamName || 'AI Buildathon Team'}</h3>
+            <h3 className="team-name-title" style={{ color: '#ffffff' }}>{teamName || 'AI Buildathon Team'}</h3>
           </div>
           {onReset && (
             <button type="button" className="btn-text-edit" onClick={onReset}>
-              Switch Email
+              Switch Team
             </button>
           )}
         </div>
         <div className="team-details-grid">
-          <div className="team-detail-item">
-            <span className="detail-label">Participant Name</span>
-            <span className="detail-value">{participantName || 'Participant'}</span>
+          <div className="team-detail-item" style={{ background: 'rgba(3, 7, 18, 0.65)', borderColor: 'rgba(255, 85, 0, 0.2)' }}>
+            <span className="detail-label" style={{ color: '#94a3b8' }}>Participant Name</span>
+            <span className="detail-value" style={{ color: '#ffffff' }}>{participantName || 'Participant'}</span>
           </div>
-          <div className="team-detail-item">
-            <span className="detail-label">Verified Email</span>
-            <span className="detail-value">{participantEmail}</span>
+          <div className="team-detail-item" style={{ background: 'rgba(3, 7, 18, 0.65)', borderColor: 'rgba(255, 85, 0, 0.2)' }}>
+            <span className="detail-label" style={{ color: '#94a3b8' }}>Verified Email</span>
+            <span className="detail-value" style={{ color: '#ffffff' }}>{participantEmail}</span>
           </div>
-          <div className="team-detail-item">
-            <span className="detail-label">Submission Status</span>
+          <div className="team-detail-item" style={{ background: 'rgba(3, 7, 18, 0.65)', borderColor: 'rgba(255, 85, 0, 0.2)' }}>
+            <span className="detail-label" style={{ color: '#94a3b8' }}>Submission Status</span>
             <span
               className="detail-value"
-              style={{ color: hasExistingSubmission ? '#d97706' : '#059669' }}
+              style={{ color: hasExistingSubmission ? '#fbbf24' : '#34d399' }}
             >
               {hasExistingSubmission ? 'Existing Submission on File' : 'Ready for Submission'}
             </span>
@@ -195,39 +222,57 @@ export default function ProjectSubmissionForm({
       </div>
 
       {hasExistingSubmission && (
-        <div className="submission-overwrite-notice">
-          <span className="material-symbols-outlined notice-icon">info</span>
+        <div
+          className="submission-overwrite-notice"
+          style={{
+            background: 'rgba(245, 158, 11, 0.12)',
+            border: '1px solid rgba(245, 158, 11, 0.4)',
+            color: '#fef3c7'
+          }}
+        >
+          <span className="material-symbols-outlined notice-icon" style={{ color: '#fbbf24' }}>info</span>
           <div>
-            <strong>Existing Submission Detected</strong>
-            <p style={{ margin: 0, marginTop: '0.2rem' }}>
-              Your team already submitted deliverables. Filling out and submitting this form will overwrite your previous submission after verifying via email code.
+            <strong style={{ color: '#fef3c7' }}>Existing Submission Detected</strong>
+            <p style={{ margin: 0, marginTop: '0.2rem', color: '#fde68a' }}>
+              Your team already has a submission recorded. Submitting this form will update and overwrite your deliverables with the new information below.
             </p>
           </div>
         </div>
       )}
 
       {/* Main Submission Form Card */}
-      <form onSubmit={handleSubmit} className="submission-card">
+      <form
+        onSubmit={handleSubmit}
+        className="submission-card"
+        style={{
+          background: 'rgba(15, 23, 42, 0.88)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1.5px solid rgba(255, 85, 0, 0.35)',
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(255, 85, 0, 0.15)',
+          color: '#ffffff'
+        }}
+      >
         {error && (
-          <div className="submission-alert submission-alert-error">
+          <div className="submission-alert submission-alert-error" style={{ background: 'rgba(239, 68, 68, 0.15)', borderColor: 'rgba(239, 68, 68, 0.4)', color: '#fca5a5' }}>
             <span className="material-symbols-outlined">error</span>
             <span>{error}</span>
           </div>
         )}
 
         {/* Section 1: Project Brief */}
-        <div className="submission-step-block">
+        <div className="submission-step-block" style={{ borderBottomColor: 'rgba(255, 85, 0, 0.2)' }}>
           <div className="submission-step-header">
             <div className="submission-step-num">1</div>
             <div className="submission-step-info">
-              <h4>Section 1: Project Brief</h4>
-              <p>Describe the core problem, solution, AI integration, and project roadmap.</p>
+              <h4 style={{ color: '#ffffff' }}>Section 1: Project Brief</h4>
+              <p style={{ color: '#cbd5e1' }}>Describe the core problem, solution, AI integration, and project roadmap.</p>
             </div>
           </div>
 
           <div className="submission-fields-grid">
             <div className="submission-field full-width">
-              <label className="submission-field-label">
+              <label className="submission-field-label" style={{ color: '#ffffff' }}>
                 Problem <span className="req-star">*</span>
               </label>
               <div className="submission-textarea-wrapper">
@@ -238,13 +283,14 @@ export default function ProjectSubmissionForm({
                   value={formData.problem}
                   onChange={handleInputChange}
                   className="submission-textarea"
+                  style={inputStyle}
                   placeholder="Describe the core problem your project addresses..."
                 />
               </div>
             </div>
 
             <div className="submission-field full-width">
-              <label className="submission-field-label">
+              <label className="submission-field-label" style={{ color: '#ffffff' }}>
                 Solution <span className="req-star">*</span>
               </label>
               <div className="submission-textarea-wrapper">
@@ -255,13 +301,14 @@ export default function ProjectSubmissionForm({
                   value={formData.solution}
                   onChange={handleInputChange}
                   className="submission-textarea"
+                  style={inputStyle}
                   placeholder="Explain how your working solution solves the problem..."
                 />
               </div>
             </div>
 
             <div className="submission-field full-width">
-              <label className="submission-field-label">
+              <label className="submission-field-label" style={{ color: '#ffffff' }}>
                 AI usage <span className="req-star">*</span>
               </label>
               <div className="submission-textarea-wrapper">
@@ -272,13 +319,14 @@ export default function ProjectSubmissionForm({
                   value={formData.ai_usage}
                   onChange={handleInputChange}
                   className="submission-textarea"
+                  style={inputStyle}
                   placeholder="Describe how AI was utilized in the general scope of this project..."
                 />
               </div>
             </div>
 
             <div className="submission-field full-width">
-              <label className="submission-field-label">
+              <label className="submission-field-label" style={{ color: '#ffffff' }}>
                 Technical Brief <span className="req-star">*</span>
               </label>
               <div className="submission-textarea-wrapper">
@@ -289,13 +337,14 @@ export default function ProjectSubmissionForm({
                   value={formData.technical_brief}
                   onChange={handleInputChange}
                   className="submission-textarea"
+                  style={inputStyle}
                   placeholder="Detail your technical architecture, frameworks, and tools used..."
                 />
               </div>
             </div>
 
             <div className="submission-field full-width">
-              <label className="submission-field-label">
+              <label className="submission-field-label" style={{ color: '#ffffff' }}>
                 Impact <span className="req-star">*</span>
               </label>
               <div className="submission-textarea-wrapper">
@@ -306,13 +355,14 @@ export default function ProjectSubmissionForm({
                   value={formData.impact}
                   onChange={handleInputChange}
                   className="submission-textarea"
+                  style={inputStyle}
                   placeholder="What is the measurable or expected impact of this solution?..."
                 />
               </div>
             </div>
 
             <div className="submission-field full-width">
-              <label className="submission-field-label">
+              <label className="submission-field-label" style={{ color: '#ffffff' }}>
                 Roadmap <span className="req-star">*</span>
               </label>
               <div className="submission-textarea-wrapper">
@@ -323,6 +373,7 @@ export default function ProjectSubmissionForm({
                   value={formData.roadmap}
                   onChange={handleInputChange}
                   className="submission-textarea"
+                  style={inputStyle}
                   placeholder="Outline future plans, milestones, and next steps..."
                 />
               </div>
@@ -331,22 +382,22 @@ export default function ProjectSubmissionForm({
         </div>
 
         {/* Section 2: Links & Statements */}
-        <div className="submission-step-block">
+        <div className="submission-step-block" style={{ borderBottomColor: 'rgba(255, 85, 0, 0.2)' }}>
           <div className="submission-step-header">
             <div className="submission-step-num">2</div>
             <div className="submission-step-info">
-              <h4>Section 2: Deliverables & Statements</h4>
-              <p>Provide verified URLs for your demo video, repository, and prototype.</p>
+              <h4 style={{ color: '#ffffff' }}>Section 2: Deliverables & Statements</h4>
+              <p style={{ color: '#cbd5e1' }}>Provide verified URLs for your demo video, repository, and prototype.</p>
             </div>
           </div>
 
           <div className="submission-fields-grid">
             <div className="submission-field full-width">
-              <label className="submission-field-label">
+              <label className="submission-field-label" style={{ color: '#ffffff' }}>
                 Demo Video <span className="req-star">*</span>
               </label>
               <div className="submission-input-wrapper">
-                <span className="material-symbols-outlined input-icon">smart_display</span>
+                <span className="material-symbols-outlined input-icon" style={{ color: '#ff7700' }}>smart_display</span>
                 <input
                   required
                   type="url"
@@ -354,18 +405,18 @@ export default function ProjectSubmissionForm({
                   value={formData.demo_video}
                   onChange={handleInputChange}
                   className="submission-input"
-                  style={{ paddingLeft: '2.75rem' }}
+                  style={{ ...inputStyle, paddingLeft: '2.75rem' }}
                   placeholder="Enter unlisted YouTube video URL (Max 3 mins showcasing a walkthrough)"
                 />
               </div>
             </div>
 
             <div className="submission-field full-width">
-              <label className="submission-field-label">
+              <label className="submission-field-label" style={{ color: '#ffffff' }}>
                 Source Repository <span className="req-star">*</span>
               </label>
               <div className="submission-input-wrapper">
-                <span className="material-symbols-outlined input-icon">code</span>
+                <span className="material-symbols-outlined input-icon" style={{ color: '#ff7700' }}>code</span>
                 <input
                   required
                   type="url"
@@ -373,18 +424,18 @@ export default function ProjectSubmissionForm({
                   value={formData.source_repo}
                   onChange={handleInputChange}
                   className="submission-input"
-                  style={{ paddingLeft: '2.75rem' }}
+                  style={{ ...inputStyle, paddingLeft: '2.75rem' }}
                   placeholder="Enter public GitHub or GitLab URL containing source code, README, and setup instructions"
                 />
               </div>
             </div>
 
             <div className="submission-field full-width">
-              <label className="submission-field-label">
+              <label className="submission-field-label" style={{ color: '#ffffff' }}>
                 Hosted Prototype <span className="req-star">*</span>
               </label>
               <div className="submission-input-wrapper">
-                <span className="material-symbols-outlined input-icon">open_in_browser</span>
+                <span className="material-symbols-outlined input-icon" style={{ color: '#ff7700' }}>open_in_browser</span>
                 <input
                   required
                   type="url"
@@ -392,14 +443,14 @@ export default function ProjectSubmissionForm({
                   value={formData.hosted_prototype}
                   onChange={handleInputChange}
                   className="submission-input"
-                  style={{ paddingLeft: '2.75rem' }}
+                  style={{ ...inputStyle, paddingLeft: '2.75rem' }}
                   placeholder="Enter live URL for judges to try and evaluate your solution"
                 />
               </div>
             </div>
 
             <div className="submission-field full-width">
-              <label className="submission-field-label">
+              <label className="submission-field-label" style={{ color: '#ffffff' }}>
                 AI Usage Statement <span className="req-star">*</span>
               </label>
               <div className="submission-textarea-wrapper">
@@ -410,6 +461,7 @@ export default function ProjectSubmissionForm({
                   value={formData.ai_usage_statement}
                   onChange={handleInputChange}
                   className="submission-textarea"
+                  style={inputStyle}
                   placeholder="Briefly describe how Qoder was specifically used during the development of your solution"
                 />
               </div>
@@ -417,67 +469,37 @@ export default function ProjectSubmissionForm({
           </div>
         </div>
 
-        {/* Section 3: Overwrite Authorization (Only shown if team already has submission) */}
-        {hasExistingSubmission && (
-          <div className="submission-step-block">
+        {/* Re-verify OTP fallback (in case session expired while writing) */}
+        {needsFreshOtp && (
+          <div className="submission-step-block" style={{ borderBottomColor: 'rgba(255, 85, 0, 0.2)' }}>
             <div className="submission-step-header">
-              <div className="submission-step-num" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
-                3
-              </div>
+              <div className="submission-step-num" style={{ background: '#f59e0b' }}>3</div>
               <div className="submission-step-info">
-                <h4>Overwrite Verification Code</h4>
-                <p>Confirm authorization by requesting an OTP code to your registered email address.</p>
+                <h4 style={{ color: '#ffffff' }}>Session Refresh Required</h4>
+                <p style={{ color: '#cbd5e1' }}>Your verification token expired while completing the form. Request a fresh code to submit.</p>
               </div>
             </div>
 
-            <div className="otp-trigger-banner" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-                <div className="otp-banner-text">
-                  <span className="material-symbols-outlined banner-icon">lock_reset</span>
-                  <div>
-                    <strong>Verification Required to Overwrite</strong>
-                    <p>
-                      A 6-digit OTP will be sent to <span className="highlight-email">{participantEmail}</span>.
-                    </p>
-                  </div>
+            <div className="otp-trigger-banner" style={{ background: 'rgba(255, 85, 0, 0.08)', borderColor: 'rgba(255, 85, 0, 0.25)' }}>
+              {!otpSent ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                  <Turnstile onVerify={(token) => setCaptchaToken(token)} />
+                  <button type="button" onClick={handleSendFreshOtp} disabled={loading || !captchaToken} className="btn-send-otp">
+                    <span className="material-symbols-outlined">send</span>
+                    {loading ? 'Sending Code...' : 'Send Fresh Verification Code'}
+                  </button>
                 </div>
-
-                {!otpSent ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.6rem' }}>
-                    <Turnstile onVerify={(token) => setCaptchaToken(token)} />
-                    <button
-                      type="button"
-                      onClick={handleSendOtp}
-                      disabled={loading || !captchaToken}
-                      className="btn-send-otp"
-                    >
-                      <span className="material-symbols-outlined">send</span>
-                      {loading ? 'Sending Code...' : 'Send Verification Code'}
-                    </button>
-                  </div>
-                ) : (
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#ecfdf5', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #10b981' }}>
-                    <span className="material-symbols-outlined" style={{ color: '#059669', fontSize: '1.2rem' }}>check_circle</span>
-                    <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#065f46' }}>Code sent! Check your inbox.</span>
-                  </div>
-                )}
-              </div>
-
-              {otpSent && (
-                <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px dashed rgba(255, 85, 0, 0.2)' }}>
-                  <label className="submission-field-label">
-                    Enter 6-Digit Verification Code <span className="req-star">*</span>
-                  </label>
+              ) : (
+                <div style={{ width: '100%' }}>
+                  <label className="submission-field-label" style={{ color: '#ffffff' }}>Enter New Code</label>
                   <div className="submission-input-wrapper" style={{ maxWidth: '240px' }}>
-                    <span className="material-symbols-outlined input-icon">key</span>
                     <input
-                      required
                       type="text"
                       maxLength={6}
                       value={otp}
                       onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                       className="submission-input otp-code-input"
-                      style={{ paddingLeft: '2.75rem', letterSpacing: '4px' }}
+                      style={{ ...inputStyle, textAlign: 'center', letterSpacing: '4px' }}
                       placeholder="••••••"
                     />
                   </div>
@@ -488,17 +510,17 @@ export default function ProjectSubmissionForm({
         )}
 
         {/* Submit Actions */}
-        <div className="submission-footer-actions">
+        <div className="submission-footer-actions" style={{ borderTopColor: 'rgba(255, 85, 0, 0.2)' }}>
           <button
             type="submit"
-            disabled={loading || (hasExistingSubmission && (!otpSent || otp.length !== 6))}
+            disabled={loading}
             className="submission-submit-btn"
           >
             {loading ? (
-              <>Processing Submission...</>
+              <>Processing Deliverables...</>
             ) : hasExistingSubmission ? (
               <>
-                Verify & Overwrite Submission
+                Update & Overwrite Submission
                 <span className="material-symbols-outlined">published_with_changes</span>
               </>
             ) : (
@@ -509,8 +531,8 @@ export default function ProjectSubmissionForm({
             )}
           </button>
 
-          <div className="submission-guarantee">
-            <span className="material-symbols-outlined">verified</span>
+          <div className="submission-guarantee" style={{ color: '#cbd5e1' }}>
+            <span className="material-symbols-outlined" style={{ color: 'var(--primary-orange)' }}>verified</span>
             <span>All deliverables will be securely timestamped and provided to the evaluation panel.</span>
           </div>
         </div>

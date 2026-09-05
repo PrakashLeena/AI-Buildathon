@@ -2,9 +2,10 @@ import { applyCors } from '../../../lib/cors.js';
 import { checkRateLimit } from '../../../lib/rateLimit.js';
 import { getClientIp } from '../../../lib/requestIp.js';
 import { isSupabaseConfigured, supabaseAdmin } from '../../../lib/supabaseAdmin.js';
+import { verifyOtpToken } from '../../../lib/otpToken.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const RATE_LIMIT = { max: 10, windowMs: 10 * 60 * 1000 };
+const RATE_LIMIT = { max: 15, windowMs: 10 * 60 * 1000 };
 
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
@@ -21,11 +22,24 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Too many verification attempts. Please try again later.' });
   }
 
-  const { email } = req.body || {};
+  const { email, otp, otpToken } = req.body || {};
   const cleanEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
 
   if (!cleanEmail || !EMAIL_RE.test(cleanEmail)) {
     return res.status(400).json({ error: 'A valid email address is required.' });
+  }
+
+  // Verify OTP
+  if (!otp || typeof otp !== 'string' || !/^\d{6}$/.test(otp.trim())) {
+    return res.status(400).json({ error: 'Please enter the 6-digit verification code.' });
+  }
+  if (!otpToken || typeof otpToken !== 'string') {
+    return res.status(400).json({ error: 'Please request a verification code first.' });
+  }
+
+  const otpCheck = verifyOtpToken(otpToken, cleanEmail, otp.trim());
+  if (!otpCheck.valid) {
+    return res.status(400).json({ error: otpCheck.error || 'Invalid or expired verification code.' });
   }
 
   if (!isSupabaseConfigured) {
@@ -86,7 +100,9 @@ export default async function handler(req, res) {
       participantName,
       participantEmail: cleanEmail,
       teamName,
-      hasExistingSubmission: !!existingSub
+      hasExistingSubmission: !!existingSub,
+      otp: otp.trim(),
+      otpToken
     });
   } catch (error) {
     console.error('[api/project-submissions/verify-email] error:', error);

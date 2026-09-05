@@ -184,12 +184,11 @@ export default function SubmitProjectPage() {
                 style={{
                   maxWidth: '580px',
                   margin: '0 auto',
-                  background: 'rgba(15, 23, 42, 0.88)',
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  border: '1.5px solid rgba(255, 85, 0, 0.35)',
-                  boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(255, 85, 0, 0.15)',
-                  color: '#ffffff'
+                  background: '#ffffff',
+                  border: '1px solid rgba(0, 0, 0, 0.08)',
+                  boxShadow: '0 20px 50px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.08)',
+                  borderRadius: '20px',
+                  color: 'var(--text-primary)'
                 }}
               >
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
@@ -198,24 +197,24 @@ export default function SubmitProjectPage() {
                       width: '60px',
                       height: '60px',
                       borderRadius: '16px',
-                      background: 'linear-gradient(135deg, rgba(255, 85, 0, 0.2), rgba(255, 136, 0, 0.1))',
-                      border: '1.5px solid rgba(255, 85, 0, 0.4)',
+                      background: 'linear-gradient(135deg, rgba(255, 85, 0, 0.12), rgba(255, 136, 0, 0.08))',
+                      border: '1.5px solid rgba(255, 85, 0, 0.3)',
                       display: 'inline-flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       color: 'var(--primary-orange)',
                       marginBottom: '1rem',
-                      boxShadow: '0 0 20px rgba(255, 85, 0, 0.3)'
+                      boxShadow: '0 4px 14px rgba(255, 85, 0, 0.2)'
                     }}
                   >
                     <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>
                       {step === 'email' ? 'verified_user' : 'mark_email_read'}
                     </span>
                   </div>
-                  <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.4rem' }}>
+                  <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.4rem' }}>
                     Verify Team Registration
                   </h2>
-                  <p style={{ fontSize: '0.92rem', color: '#cbd5e1', margin: 0, lineHeight: 1.5 }}>
+                  <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
                     {step === 'email'
                       ? 'Enter your registered team email to receive a 6-digit verification code.'
                       : `A 6-digit code has been sent to ${email}. Enter it below to unlock the portal.`}
@@ -223,7 +222,7 @@ export default function SubmitProjectPage() {
                 </div>
 
                 {error && (
-                  <div className="submission-alert submission-alert-error" style={{ background: 'rgba(239, 68, 68, 0.15)', borderColor: 'rgba(239, 68, 68, 0.4)', color: '#fca5a5' }}>
+                  <div className="submission-alert submission-alert-error">
                     <span className="material-symbols-outlined">error</span>
                     <span>{error}</span>
                   </div>
@@ -232,11 +231,11 @@ export default function SubmitProjectPage() {
                 {step === 'email' ? (
                   <form onSubmit={handleSendOtp}>
                     <div className="submission-field full-width" style={{ marginBottom: '1.5rem' }}>
-                      <label htmlFor="email" className="submission-field-label" style={{ color: '#ffffff' }}>
+                      <label htmlFor="email" className="submission-field-label" style={{ color: 'var(--text-primary)' }}>
                         Registered Email Address <span className="req-star">*</span>
                       </label>
                       <div className="submission-input-wrapper">
-                        <span className="material-symbols-outlined input-icon" style={{ color: '#ff7700' }}>mail</span>
+                        <span className="material-symbols-outlined input-icon">mail</span>
                         <input
                           type="email"
                           id="email"
@@ -247,9 +246,9 @@ export default function SubmitProjectPage() {
                           placeholder="e.g. yourname@stu.kln.ac.lk"
                           style={{
                             paddingLeft: '2.75rem',
-                            background: 'rgba(3, 7, 18, 0.75)',
-                            borderColor: 'rgba(255, 85, 0, 0.3)',
-                            color: '#ffffff'
+                            background: '#f8fafc',
+                            borderColor: 'rgba(0, 0, 0, 0.12)',
+                            color: 'var(--text-primary)'
                           }}
                         />
                       </div>
@@ -276,18 +275,18 @@ export default function SubmitProjectPage() {
                         )}
                       </button>
 
-                      <div className="submission-guarantee" style={{ color: '#cbd5e1' }}>
-                        <span className="material-symbols-outlined" style={{ color: 'var(--primary-orange)' }}>lock</span>
+                      <div className="submission-guarantee">
+                        <span className="material-symbols-outlined">lock</span>
                         <span>Access is restricted to pre-registered participant emails.</span>
                       </div>
                     </div>
                   </form>
                 ) : (
                   <form onSubmit={handleVerifyOtp}>
-                    <div style={{ background: 'rgba(255, 85, 0, 0.08)', border: '1px solid rgba(255, 85, 0, 0.25)', borderRadius: '10px', padding: '0.85rem 1.15rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                    <div style={{ background: 'rgba(255, 85, 0, 0.06)', border: '1px solid rgba(255, 85, 0, 0.2)', borderRadius: '10px', padding: '0.85rem 1.15rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                         <span className="material-symbols-outlined" style={{ color: 'var(--primary-orange)' }}>mail</span>
-                        <span style={{ fontSize: '0.9rem', color: '#ffffff', fontWeight: 600 }}>{email}</span>
+                        <span style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 600 }}>{email}</span>
                       </div>
                       <button
                         type="button"
@@ -302,11 +301,11 @@ export default function SubmitProjectPage() {
                     </div>
 
                     <div className="submission-field full-width" style={{ marginBottom: '1.75rem' }}>
-                      <label htmlFor="otp" className="submission-field-label" style={{ color: '#ffffff' }}>
+                      <label htmlFor="otp" className="submission-field-label" style={{ color: 'var(--text-primary)' }}>
                         Enter 6-Digit Verification Code <span className="req-star">*</span>
                       </label>
                       <div className="submission-input-wrapper">
-                        <span className="material-symbols-outlined input-icon" style={{ color: '#ff7700' }}>key</span>
+                        <span className="material-symbols-outlined input-icon">key</span>
                         <input
                           type="text"
                           id="otp"
@@ -322,16 +321,16 @@ export default function SubmitProjectPage() {
                             textAlign: 'center',
                             fontSize: '1.3rem',
                             fontWeight: '800',
-                            background: 'rgba(3, 7, 18, 0.75)',
-                            borderColor: 'rgba(255, 85, 0, 0.3)',
-                            color: '#ffffff'
+                            background: '#f8fafc',
+                            borderColor: 'rgba(0, 0, 0, 0.15)',
+                            color: 'var(--text-primary)'
                           }}
                           autoFocus
                         />
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
                         {resendCooldown > 0 ? (
-                          <span style={{ fontSize: '0.82rem', color: '#94a3b8' }}>
+                          <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
                             Resend code in {resendCooldown}s
                           </span>
                         ) : (

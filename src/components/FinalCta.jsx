@@ -37,11 +37,11 @@ export default function FinalCta() {
           </button>
         ) : (
           <a
-            href="#submission"
+            href="/submit-project"
             className="final-cta-button"
             style={{ textDecoration: "none" }}
           >
-            Submit Project Brief{" "}
+            Go to Final Project Submission Portal{" "}
             <span className="material-symbols-outlined" aria-hidden="true">
               arrow_forward
             </span>

@@ -43,7 +43,7 @@ export default function Header() {
           <a href="#prizes" onClick={() => setMenuOpen(false)}>Prizes</a>
         </li>
         <li>
-          <a href="#submission" onClick={() => setMenuOpen(false)}>Submission</a>
+          <a href="/submit-project" onClick={() => setMenuOpen(false)}>Final Submission Portal</a>
         </li>
         <li>
           <a

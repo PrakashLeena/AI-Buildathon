@@ -189,10 +189,10 @@ export default function Hero() {
           </a>
         ) : (
           <a
-            href="#submission"
+            href="/submit-project"
             className="btn-primary"
           >
-            Submit Project Brief{" "}
+            Go to Final Project Submission Portal{" "}
             <span className="material-symbols-outlined" aria-hidden="true">
               arrow_forward
             </span>

@@ -111,7 +111,7 @@ create table if not exists project_submissions (
   technical_brief text not null,
   impact text not null,
   roadmap text not null,
-  demo_video text not null,
+  demo_video text default '',
   source_repo text not null,
   hosted_prototype text not null,
   ai_usage_statement text not null,
@@ -119,5 +119,8 @@ create table if not exists project_submissions (
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
   unique (registration_id)
 );
+
+-- In case table was created with not null on demo_video:
+alter table if exists project_submissions alter column demo_video drop not null;
 
 alter table project_submissions enable row level security;

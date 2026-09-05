@@ -58,8 +58,18 @@ export default async function handler(req, res) {
     }
   }
 
-  // Basic validation for required fields
-  const requiredFields = { problem, solution, ai_usage, technical_brief, impact, roadmap, demo_video, source_repo, hosted_prototype, ai_usage_statement };
+  // Basic validation for required fields (demo_video is optional; all other fields are compulsory)
+  const requiredFields = {
+    problem,
+    solution,
+    ai_usage,
+    technical_brief,
+    impact,
+    roadmap,
+    source_repo,
+    hosted_prototype,
+    ai_usage_statement
+  };
   for (const [key, value] of Object.entries(requiredFields)) {
     if (!value || typeof value !== 'string' || !value.trim()) {
       return res.status(400).json({ error: `Field ${key} is required.` });
@@ -80,7 +90,7 @@ export default async function handler(req, res) {
       technical_brief: technical_brief.trim(),
       impact: impact.trim(),
       roadmap: roadmap.trim(),
-      demo_video: demo_video.trim(),
+      demo_video: demo_video && typeof demo_video === 'string' ? demo_video.trim() : '',
       source_repo: source_repo.trim(),
       hosted_prototype: hosted_prototype.trim(),
       ai_usage_statement: ai_usage_statement.trim(),

@@ -391,19 +391,18 @@ export default function ProjectSubmissionForm({
           <div className="submission-fields-grid">
             <div className="submission-field full-width">
               <label className="submission-field-label" style={{ color: 'var(--text-primary)' }}>
-                Demo Video <span className="req-star">*</span>
+                Demo Video <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'normal', marginLeft: '0.35rem' }}>(Optional)</span>
               </label>
               <div className="submission-input-wrapper">
                 <span className="material-symbols-outlined input-icon">smart_display</span>
                 <input
-                  required
                   type="url"
                   name="demo_video"
                   value={formData.demo_video}
                   onChange={handleInputChange}
                   className="submission-input"
                   style={{ ...inputStyle, paddingLeft: '2.75rem' }}
-                  placeholder="Enter unlisted YouTube video URL (Max 3 mins showcasing a walkthrough)"
+                  placeholder="Enter unlisted YouTube video URL (Max 3 mins showcasing a walkthrough, optional)"
                 />
               </div>
             </div>

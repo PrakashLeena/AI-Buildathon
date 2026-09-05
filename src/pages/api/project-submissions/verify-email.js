@@ -2,7 +2,7 @@ import { applyCors } from '../../../lib/cors.js';
 import { checkRateLimit } from '../../../lib/rateLimit.js';
 import { getClientIp } from '../../../lib/requestIp.js';
 import { isSupabaseConfigured, supabaseAdmin } from '../../../lib/supabaseAdmin.js';
-import { verifyOtpToken } from '../../../lib/otpToken.js';
+import { verifyOtpToken, createSubmissionSessionToken } from '../../../lib/otpToken.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const RATE_LIMIT = { max: 15, windowMs: 10 * 60 * 1000 };
@@ -94,6 +94,9 @@ export default async function handler(req, res) {
       console.error('[api/project-submissions/verify-email] submission check error:', subError.message);
     }
 
+    // Generate signed submission session token valid for 60 minutes
+    const submissionSessionToken = createSubmissionSessionToken(cleanEmail, registrationId, 60);
+
     return res.status(200).json({
       success: true,
       registrationId,
@@ -101,6 +104,7 @@ export default async function handler(req, res) {
       participantEmail: cleanEmail,
       teamName,
       hasExistingSubmission: !!existingSub,
+      submissionSessionToken,
       otp: otp.trim(),
       otpToken
     });

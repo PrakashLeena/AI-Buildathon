@@ -5,6 +5,9 @@ import Footer from '../components/Footer';
 import Turnstile from '../components/Turnstile';
 import ProjectSubmissionForm from '../components/ProjectSubmissionForm';
 
+const SUBMISSION_SESSION_KEY = 'ai_buildathon_submission_session';
+const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
 export default function SubmitProjectPage() {
   const [email, setEmail] = useState('');
   const [step, setStep] = useState('email'); // 'email' | 'otp'
@@ -16,6 +19,24 @@ export default function SubmitProjectPage() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [verifiedData, setVerifiedData] = useState(null);
   const turnstileRef = useRef(null);
+
+  // Restore active 30-minute verification session on page load / refresh
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(SUBMISSION_SESSION_KEY);
+      if (raw) {
+        const session = JSON.parse(raw);
+        if (session && session.expiresAt && Date.now() < session.expiresAt && session.registrationId) {
+          setVerifiedData(session);
+          setEmail(session.participantEmail || '');
+        } else {
+          localStorage.removeItem(SUBMISSION_SESSION_KEY);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to restore submission session', e);
+    }
+  }, []);
 
   // Resend cooldown timer
   useEffect(() => {
@@ -89,15 +110,24 @@ export default function SubmitProjectPage() {
         throw new Error(data.error || 'Verification failed. Please try again.');
       }
 
-      setVerifiedData({
+      const sessionData = {
         registrationId: data.registrationId,
         participantName: data.participantName,
         participantEmail: email.trim().toLowerCase(),
         teamName: data.teamName,
         hasExistingSubmission: data.hasExistingSubmission,
-        otp: data.otp,
-        otpToken: data.otpToken
-      });
+        submissionSessionToken: data.submissionSessionToken,
+        otp: cleanOtp,
+        otpToken: data.otpToken,
+        expiresAt: Date.now() + SESSION_TTL_MS
+      };
+
+      setVerifiedData(sessionData);
+      try {
+        localStorage.setItem(SUBMISSION_SESSION_KEY, JSON.stringify(sessionData));
+      } catch (err) {
+        console.error('Failed to save session to localStorage', err);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -106,6 +136,9 @@ export default function SubmitProjectPage() {
   };
 
   const handleReset = () => {
+    try {
+      localStorage.removeItem(SUBMISSION_SESSION_KEY);
+    } catch (err) {}
     setVerifiedData(null);
     setStep('email');
     setOtp('');

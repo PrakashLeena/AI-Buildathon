@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Turnstile from './Turnstile';
 
@@ -8,10 +8,13 @@ export default function ProjectSubmissionForm({
   participantName, 
   teamName,
   hasExistingSubmission,
+  submissionSessionToken,
   otp: initialOtp,
   otpToken: initialOtpToken,
   onReset 
 }) {
+  const DRAFT_KEY = `ai_buildathon_draft_${registrationId || 'default'}`;
+
   const [formData, setFormData] = useState({
     problem: '',
     solution: '',
@@ -26,6 +29,7 @@ export default function ProjectSubmissionForm({
     whatsapp_number: ''
   });
 
+  const [draftStatus, setDraftStatus] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -37,9 +41,58 @@ export default function ProjectSubmissionForm({
   const [needsFreshOtp, setNeedsFreshOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
 
+  // Restore draft on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+          const hasContent = Object.values(parsed).some((v) => typeof v === 'string' && v.trim().length > 0);
+          if (hasContent) {
+            setFormData((prev) => ({ ...prev, ...parsed }));
+            setDraftStatus('Restored previous draft from this device');
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load draft from localStorage', err);
+    }
+  }, [DRAFT_KEY]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value };
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(next));
+        setDraftStatus('Draft auto-saved');
+      } catch (err) {}
+      return next;
+    });
+  };
+
+  const handleClearDraft = () => {
+    if (typeof window !== 'undefined' && window.confirm('Are you sure you want to clear your drafted answers?')) {
+      try {
+        localStorage.removeItem(DRAFT_KEY);
+      } catch (err) {}
+      setFormData({
+        problem: '',
+        solution: '',
+        ai_usage: '',
+        technical_brief: '',
+        impact: '',
+        roadmap: '',
+        demo_video: '',
+        source_repo: '',
+        hosted_prototype: '',
+        ai_usage_statement: '',
+        whatsapp_number: ''
+      });
+      setDraftStatus('Draft cleared');
+      setTimeout(() => setDraftStatus(''), 2500);
+    }
   };
 
   const handleSendFreshOtp = async (e) => {
@@ -64,6 +117,7 @@ export default function ProjectSubmissionForm({
       }
       setOtpToken(data.otpToken);
       setOtpSent(true);
+      setNeedsFreshOtp(false);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -75,7 +129,8 @@ export default function ProjectSubmissionForm({
     e.preventDefault();
     setError('');
 
-    if (!otp || !otpToken) {
+    // If no session token and no OTP, request code
+    if (!submissionSessionToken && (!otp || !otpToken)) {
       setNeedsFreshOtp(true);
       setError('Please verify with a security code before submitting.');
       return;
@@ -87,8 +142,9 @@ export default function ProjectSubmissionForm({
         registrationId,
         participantEmail,
         isOverwrite: hasExistingSubmission,
-        otp: otp.trim(),
-        otpToken,
+        submissionSessionToken,
+        otp: otp ? otp.trim() : undefined,
+        otpToken: otpToken || undefined,
         ...formData
       };
 
@@ -106,6 +162,11 @@ export default function ProjectSubmissionForm({
         throw new Error(data.error || 'Failed to submit project.');
       }
 
+      // Submission successful - clean up draft
+      try {
+        localStorage.removeItem(DRAFT_KEY);
+      } catch (err) {}
+
       setSuccess(true);
     } catch (err) {
       setError(err.message);
@@ -117,7 +178,8 @@ export default function ProjectSubmissionForm({
   const inputStyle = {
     background: '#f8fafc',
     borderColor: 'rgba(0, 0, 0, 0.12)',
-    color: 'var(--text-primary)'
+    color: 'var(--text-primary)',
+    fontSize: '16px' // Prevents iOS Safari auto-zoom on mobile inputs
   };
 
   if (success) {
@@ -184,16 +246,20 @@ export default function ProjectSubmissionForm({
           color: 'var(--text-primary)'
         }}
       >
-        <div className="team-card-header" style={{ borderBottom: '1px dashed rgba(255, 85, 0, 0.2)' }}>
-          <div className="team-badge-icon">
-            <span className="material-symbols-outlined">groups</span>
-          </div>
-          <div style={{ flex: 1 }}>
-            <span className="team-eyebrow">TEAM VERIFIED</span>
-            <h3 className="team-name-title" style={{ color: 'var(--text-primary)' }}>{teamName || 'AI Buildathon Team'}</h3>
+        <div className="team-card-header" style={{ borderBottom: '1px dashed rgba(255, 85, 0, 0.2)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', minWidth: '200px' }}>
+            <div className="team-badge-icon" style={{ flexShrink: 0 }}>
+              <span className="material-symbols-outlined">groups</span>
+            </div>
+            <div>
+              <span className="team-eyebrow">TEAM VERIFIED</span>
+              <h3 className="team-name-title" style={{ color: 'var(--text-primary)', fontSize: '1.35rem', margin: 0, wordBreak: 'break-word' }}>
+                {teamName || 'AI Buildathon Team'}
+              </h3>
+            </div>
           </div>
           {onReset && (
-            <button type="button" className="btn-text-edit" onClick={onReset}>
+            <button type="button" className="btn-text-edit" onClick={onReset} style={{ marginLeft: 'auto' }}>
               Switch Team
             </button>
           )}
@@ -218,6 +284,49 @@ export default function ProjectSubmissionForm({
           </div>
         </div>
       </div>
+
+      {/* Auto-save Draft Status Bar */}
+      {draftStatus && (
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '0.5rem',
+            background: 'rgba(16, 185, 129, 0.08)',
+            border: '1px solid rgba(16, 185, 129, 0.25)',
+            borderRadius: '12px',
+            padding: '0.65rem 1rem',
+            marginBottom: '1rem',
+            fontSize: '0.85rem',
+            color: '#065f46'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#10b981' }}>
+              cloud_done
+            </span>
+            <span style={{ fontWeight: 600 }}>{draftStatus}</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleClearDraft}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#dc2626',
+              cursor: 'pointer',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              textDecoration: 'underline',
+              padding: '0.2rem 0'
+            }}
+          >
+            Clear Draft
+          </button>
+        </div>
+      )}
 
       {hasExistingSubmission && (
         <div

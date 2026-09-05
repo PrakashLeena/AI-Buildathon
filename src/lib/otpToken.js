@@ -100,3 +100,54 @@ export function isTokenIssuedByUs(token, email) {
   const parsed = parseToken(token);
   return Boolean(parsed && parsed.payload.email === String(email || '').trim().toLowerCase());
 }
+
+/**
+ * Creates a signed submission session token valid for `expiryMinutes` (default 60 mins).
+ * Allows the user to fill and submit the final deliverables without re-verifying OTP.
+ */
+export function createSubmissionSessionToken(email, registrationId, expiryMinutes = 60) {
+  const exp = Date.now() + expiryMinutes * 60 * 1000;
+  const payloadB64 = Buffer.from(
+    JSON.stringify({
+      email: String(email || '').trim().toLowerCase(),
+      registrationId: String(registrationId || '').trim(),
+      exp
+    })
+  ).toString('base64url');
+  const payloadMac = hmac(payloadB64);
+  return `${payloadB64}.${payloadMac}`;
+}
+
+/**
+ * Verifies a submission session token.
+ * Validates HMAC signature, expiration time, and email/registrationId match.
+ */
+export function verifySubmissionSessionToken(token, email, registrationId) {
+  if (typeof token !== 'string') return { valid: false, error: 'Invalid session token.' };
+  const parts = token.split('.');
+  if (parts.length !== 2) return { valid: false, error: 'Malformed session token.' };
+
+  const [payloadB64, payloadMac] = parts;
+  if (!safeEqual(hmac(payloadB64), payloadMac)) {
+    return { valid: false, error: 'Session signature verification failed.' };
+  }
+
+  try {
+    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+    if (!payload || typeof payload.exp !== 'number') {
+      return { valid: false, error: 'Corrupted session token.' };
+    }
+    if (Date.now() > payload.exp) {
+      return { valid: false, error: 'Your submission session has expired. Please verify your email again.' };
+    }
+    if (payload.email !== String(email || '').trim().toLowerCase()) {
+      return { valid: false, error: 'Session email mismatch.' };
+    }
+    if (registrationId && payload.registrationId && payload.registrationId !== String(registrationId).trim()) {
+      return { valid: false, error: 'Session registration mismatch.' };
+    }
+    return { valid: true, payload };
+  } catch {
+    return { valid: false, error: 'Could not parse session token.' };
+  }
+}

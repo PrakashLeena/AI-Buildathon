@@ -1,5 +1,5 @@
 import { applyCors } from '../../../lib/cors.js';
-import { verifyOtpToken } from '../../../lib/otpToken.js';
+import { verifyOtpToken, verifySubmissionSessionToken } from '../../../lib/otpToken.js';
 import { checkRateLimit } from '../../../lib/rateLimit.js';
 import { getClientIp } from '../../../lib/requestIp.js';
 import { isSupabaseConfigured, supabaseAdmin } from '../../../lib/supabaseAdmin.js';
@@ -25,6 +25,7 @@ export default async function handler(req, res) {
     registrationId,
     participantEmail,
     isOverwrite,
+    submissionSessionToken,
     otp,
     otpToken,
     problem,
@@ -44,21 +45,28 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing registration details. Please verify your email again.' });
   }
 
-  // Every submission (new or overwrite) must carry a valid, unexpired OTP
-  // proving the caller actually completed email verification. This used to
-  // only be checked on overwrite, which let anyone who knew a team's
-  // registrationId POST a first-time submission for that team with no
-  // verification at all.
-  if (!otp || typeof otp !== 'string' || !/^\d{6}$/.test(otp.trim())) {
-    return res.status(400).json({ error: 'Please verify your email again before submitting.', otpError: true });
-  }
-  if (!otpToken || typeof otpToken !== 'string') {
-    return res.status(400).json({ error: 'Please verify your email again before submitting.', otpError: true });
+  // Authorize submission: First check if a signed submissionSessionToken is present and valid (up to 60 mins)
+  let isAuthorized = false;
+  if (submissionSessionToken && typeof submissionSessionToken === 'string') {
+    const sessionCheck = verifySubmissionSessionToken(submissionSessionToken, participantEmail.toLowerCase(), registrationId);
+    if (sessionCheck.valid) {
+      isAuthorized = true;
+    }
   }
 
-  const otpCheck = verifyOtpToken(otpToken, participantEmail.toLowerCase(), otp.trim());
-  if (!otpCheck.valid) {
-    return res.status(400).json({ error: otpCheck.error || 'Invalid or expired verification code.', otpError: true });
+  // If not authorized via session token, fall back to OTP token check
+  if (!isAuthorized) {
+    if (!otp || typeof otp !== 'string' || !/^\d{6}$/.test(otp.trim())) {
+      return res.status(400).json({ error: 'Your session has expired. Please verify your email again before submitting.', otpError: true });
+    }
+    if (!otpToken || typeof otpToken !== 'string') {
+      return res.status(400).json({ error: 'Your session has expired. Please verify your email again before submitting.', otpError: true });
+    }
+
+    const otpCheck = verifyOtpToken(otpToken, participantEmail.toLowerCase(), otp.trim());
+    if (!otpCheck.valid) {
+      return res.status(400).json({ error: otpCheck.error || 'Invalid or expired verification code.', otpError: true });
+    }
   }
 
   // Basic validation for required fields (demo_video is optional; all other fields are compulsory)

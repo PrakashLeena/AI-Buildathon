@@ -48,8 +48,9 @@ export default async function handler(req, res) {
   //   "register" (default)   - the email must NOT already be registered.
   //   "edit"                 - the email MUST belong to an existing team leader.
   //   "submission"           - for project brief submissions (participant verification).
+  //   "project_submission"   - for final project submissions (participant verification).
   const rawMode = req.body?.mode;
-  const mode = rawMode === 'edit' ? 'edit' : rawMode === 'submission' ? 'submission' : 'register';
+  const mode = rawMode === 'edit' ? 'edit' : rawMode === 'submission' ? 'submission' : rawMode === 'project_submission' ? 'project_submission' : 'register';
 
   // Same honeypot as the registration endpoint - bots that fill every field
   // reveal themselves here before we spend an email send.
@@ -80,7 +81,7 @@ export default async function handler(req, res) {
   // previously issued OTP token: its valid signature proves the ORIGINAL
   // send for this same email already passed the CAPTCHA.
   const isAuthorisedResend = previousToken && isTokenIssuedByUs(previousToken, cleanEmail);
-  if (!isAuthorisedResend && !isTestMode() && mode !== 'submission') {
+  if (!isAuthorisedResend && !isTestMode() && mode !== 'submission' && mode !== 'project_submission') {
     const captchaResult = await verifyTurnstileToken(captchaToken, clientIp);
     if (!captchaResult.success) {
       return res.status(400).json({ error: captchaResult.error });
@@ -116,7 +117,7 @@ export default async function handler(req, res) {
       });
     }
     recipientName = existing.full_name;
-  } else if (mode === 'submission') {
+  } else if (mode === 'submission' || mode === 'project_submission') {
     // Submissions are strictly for registered teams only (registration period closed).
     if (!isSupabaseConfigured) {
       return res.status(503).json({ error: 'This service is not available right now. Please try again later.' });

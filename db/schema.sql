@@ -100,3 +100,24 @@ create unique index if not exists submissions_registration_id_key
 --    select id, team_name, participant_email from submissions where registration_id is null;
 
 
+-- New Project Submission Portal table (Independent)
+create table if not exists project_submissions (
+  id uuid default gen_random_uuid() primary key,
+  registration_id uuid references registrations(id) not null,
+  participant_email text not null,
+  problem text not null,
+  solution text not null,
+  ai_usage text not null,
+  technical_brief text not null,
+  impact text not null,
+  roadmap text not null,
+  demo_video text not null,
+  source_repo text not null,
+  hosted_prototype text not null,
+  ai_usage_statement text not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  unique (registration_id)
+);
+
+alter table project_submissions enable row level security;

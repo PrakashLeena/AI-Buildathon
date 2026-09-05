@@ -274,11 +274,6 @@ export default function SubmitProjectPage() {
                           </>
                         )}
                       </button>
-
-                      <div className="submission-guarantee">
-                        <span className="material-symbols-outlined">lock</span>
-                        <span>Access is restricted to pre-registered participant emails.</span>
-                      </div>
                     </div>
                   </form>
                 ) : (

@@ -392,7 +392,7 @@ export default function ProjectSubmissionForm({
           <div className="submission-fields-grid">
             <div className="submission-field full-width">
               <label className="submission-field-label" style={{ color: 'var(--text-primary)' }}>
-                Demo Video <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'normal', marginLeft: '0.35rem' }}>(Optional)</span>
+                Demo Video
               </label>
               <p className="submission-field-desc">Unlisted YouTube link, 3 minutes max.</p>
               <div className="submission-input-wrapper">

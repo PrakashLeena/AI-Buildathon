@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Turnstile from './Turnstile';
 
@@ -40,6 +40,11 @@ export default function ProjectSubmissionForm({
   const [captchaToken, setCaptchaToken] = useState('');
   const [needsFreshOtp, setNeedsFreshOtp] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+
+  // Nudge for a missing demo video: ask once, then respect whatever they pick.
+  const [showVideoNudge, setShowVideoNudge] = useState(false);
+  const [videoNudgeAcknowledged, setVideoNudgeAcknowledged] = useState(false);
+  const demoVideoRef = useRef(null);
 
   // Restore draft on mount
   useEffect(() => {
@@ -125,8 +130,18 @@ export default function ProjectSubmissionForm({
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!formData.demo_video.trim() && !videoNudgeAcknowledged) {
+      setShowVideoNudge(true);
+      return;
+    }
+
+    doSubmit();
+  };
+
+  const doSubmit = async () => {
     setError('');
 
     // If no session token and no OTP, request code
@@ -507,6 +522,7 @@ export default function ProjectSubmissionForm({
               <div className="submission-input-wrapper">
                 <span className="material-symbols-outlined input-icon">smart_display</span>
                 <input
+                  ref={demoVideoRef}
                   type="url"
                   name="demo_video"
                   value={formData.demo_video}
@@ -662,6 +678,83 @@ export default function ProjectSubmissionForm({
           </button>
         </div>
       </form>
+
+      {showVideoNudge && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 1000,
+            background: 'rgba(3, 7, 18, 0.65)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem'
+          }}
+        >
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: '20px',
+              padding: '2rem',
+              maxWidth: '420px',
+              width: '100%',
+              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.35)',
+              textAlign: 'center'
+            }}
+          >
+            <div
+              style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '14px',
+                background: 'linear-gradient(135deg, rgba(255, 85, 0, 0.12), rgba(255, 136, 0, 0.08))',
+                border: '1.5px solid rgba(255, 85, 0, 0.3)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--primary-orange)',
+                marginBottom: '1rem'
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>smart_display</span>
+            </div>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.6rem' }}>
+              Skip the demo video?
+            </h3>
+            <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.75rem' }}>
+              A short walkthrough helps the evaluation panel understand your idea faster, and teams with a demo video tend to make a stronger impression on judges. You can still submit now and add one anytime before the deadline. Just come back and update your submission.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              <button
+                type="button"
+                className="submission-submit-btn"
+                style={{ width: '100%', maxWidth: '100%' }}
+                onClick={() => {
+                  setShowVideoNudge(false);
+                  demoVideoRef.current?.focus();
+                }}
+              >
+                Add a Video
+              </button>
+              <button
+                type="button"
+                className="btn-text-edit"
+                style={{ padding: '0.5rem' }}
+                onClick={() => {
+                  setVideoNudgeAcknowledged(true);
+                  setShowVideoNudge(false);
+                  doSubmit();
+                }}
+              >
+                Submit Without Video
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

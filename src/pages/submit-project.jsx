@@ -314,10 +314,40 @@ export default function SubmitProjectPage() {
                   </form>
                 ) : (
                   <form onSubmit={handleVerifyOtp}>
-                    <div style={{ background: 'rgba(255, 85, 0, 0.06)', border: '1px solid rgba(255, 85, 0, 0.2)', borderRadius: '10px', padding: '0.85rem 1.15rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                        <span className="material-symbols-outlined" style={{ color: 'var(--primary-orange)' }}>mail</span>
-                        <span style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 600 }}>{email}</span>
+                    <div
+                      style={{
+                        background: 'rgba(255, 85, 0, 0.06)',
+                        border: '1px solid rgba(255, 85, 0, 0.22)',
+                        borderRadius: '12px',
+                        padding: '0.75rem 1rem',
+                        marginBottom: '1.5rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '0.75rem',
+                        minWidth: 0,
+                        width: '100%',
+                        boxSizing: 'border-box'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0, flex: 1 }}>
+                        <span className="material-symbols-outlined" style={{ color: 'var(--primary-orange)', fontSize: '20px', flexShrink: 0 }}>
+                          mail
+                        </span>
+                        <span
+                          title={email}
+                          style={{
+                            fontSize: '0.88rem',
+                            color: 'var(--text-primary)',
+                            fontWeight: 600,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            minWidth: 0
+                          }}
+                        >
+                          {email}
+                        </span>
                       </div>
                       <button
                         type="button"
@@ -325,7 +355,22 @@ export default function SubmitProjectPage() {
                           setStep('email');
                           setError('');
                         }}
-                        style={{ background: 'transparent', border: 'none', color: 'var(--primary-orange)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'underline' }}
+                        style={{
+                          flexShrink: 0,
+                          background: 'rgba(255, 85, 0, 0.08)',
+                          border: '1px solid rgba(255, 85, 0, 0.25)',
+                          borderRadius: '6px',
+                          color: 'var(--primary-orange)',
+                          cursor: 'pointer',
+                          fontSize: '0.78rem',
+                          fontWeight: 700,
+                          padding: '0.35rem 0.75rem',
+                          whiteSpace: 'nowrap',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.2rem',
+                          lineHeight: 1.2
+                        }}
                       >
                         Change
                       </button>

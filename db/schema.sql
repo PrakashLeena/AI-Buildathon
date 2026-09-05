@@ -124,3 +124,10 @@ create table if not exists project_submissions (
 alter table if exists project_submissions alter column demo_video drop not null;
 
 alter table project_submissions enable row level security;
+
+-- MIGRATION (2026-09): WhatsApp number wasn't collected at registration.
+-- We now collect it in the final submission portal so organisers have a
+-- direct way to reach a team about judging logistics or results. Nullable
+-- so existing submission rows aren't rejected - the app enforces it as
+-- required for anything submitted from here on.
+alter table if exists project_submissions add column if not exists whatsapp_number text;

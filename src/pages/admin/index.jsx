@@ -691,6 +691,24 @@ export default function AdminDashboard({
                                   ) : (
                                     <span className="text-[11px] text-slate-600 italic">No live link</span>
                                   )}
+
+                                  {s.whatsapp_number ? (
+                                    <a
+                                      href={`https://wa.me/${s.whatsapp_number.replace(/[^0-9]/g, '')}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1.5 text-xs text-emerald-300 hover:text-emerald-200 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded hover:bg-emerald-500/20 transition truncate max-w-[240px]"
+                                      title={`Chat on WhatsApp: ${s.whatsapp_number}`}
+                                    >
+                                      <svg className="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.79.47 3.53 1.36 5.07L2.05 22l5.18-1.36a9.9 9.9 0 004.8 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.95 6.45 17.5 2 12.04 2zm5.86 14.02c-.25.7-1.45 1.34-1.99 1.42-.51.08-1.15.11-1.86-.12-.43-.13-.98-.32-1.69-.62-2.97-1.28-4.91-4.27-5.06-4.47-.15-.2-1.21-1.61-1.21-3.07 0-1.46.77-2.18 1.04-2.48.27-.3.6-.37.8-.37.2 0 .4 0 .58.01.18.01.43-.07.68.52.25.6.85 2.07.93 2.22.08.15.13.33.02.53-.1.2-.15.32-.3.5-.15.18-.31.4-.44.53-.15.15-.3.31-.13.61.17.3.76 1.25 1.63 2.03 1.12 1 2.06 1.31 2.36 1.46.3.15.48.13.65-.08.18-.2.75-.87.95-1.17.2-.3.4-.25.68-.15.28.1 1.77.84 2.07.99.3.15.5.23.58.35.08.13.08.72-.17 1.42z" />
+                                      </svg>
+                                      <span className="truncate">WhatsApp</span>
+                                      <span className="text-[10px] text-emerald-400 font-mono">↗</span>
+                                    </a>
+                                  ) : (
+                                    <span className="text-[11px] text-slate-600 italic">No WhatsApp number</span>
+                                  )}
                                 </div>
                               </td>
 
@@ -766,7 +784,7 @@ export default function AdminDashboard({
                                     </div>
 
                                     {/* Key Deliverable Links Cards */}
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                                       <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4 flex flex-col justify-between gap-2">
                                         <div className="flex items-center gap-2 text-xs font-bold text-rose-400 uppercase tracking-wider">
                                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -850,6 +868,36 @@ export default function AdminDashboard({
                                               className="text-[11px] text-slate-400 hover:text-white px-2 py-0.5 rounded border border-slate-800 shrink-0"
                                             >
                                               {copiedId === `proto-${s.id}` ? '✓' : 'Copy'}
+                                            </button>
+                                          </div>
+                                        ) : (
+                                          <p className="text-xs text-slate-600 italic">Not provided</p>
+                                        )}
+                                      </div>
+
+                                      <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4 flex flex-col justify-between gap-2">
+                                        <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-wider">
+                                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.79.47 3.53 1.36 5.07L2.05 22l5.18-1.36a9.9 9.9 0 004.8 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.95 6.45 17.5 2 12.04 2zm5.86 14.02c-.25.7-1.45 1.34-1.99 1.42-.51.08-1.15.11-1.86-.12-.43-.13-.98-.32-1.69-.62-2.97-1.28-4.91-4.27-5.06-4.47-.15-.2-1.21-1.61-1.21-3.07 0-1.46.77-2.18 1.04-2.48.27-.3.6-.37.8-.37.2 0 .4 0 .58.01.18.01.43-.07.68.52.25.6.85 2.07.93 2.22.08.15.13.33.02.53-.1.2-.15.32-.3.5-.15.18-.31.4-.44.53-.15.15-.3.31-.13.61.17.3.76 1.25 1.63 2.03 1.12 1 2.06 1.31 2.36 1.46.3.15.48.13.65-.08.18-.2.75-.87.95-1.17.2-.3.4-.25.68-.15.28.1 1.77.84 2.07.99.3.15.5.23.58.35.08.13.08.72-.17 1.42z" />
+                                          </svg>
+                                          WhatsApp
+                                        </div>
+                                        {s.whatsapp_number ? (
+                                          <div className="flex items-center justify-between gap-2">
+                                            <a
+                                              href={`https://wa.me/${s.whatsapp_number.replace(/[^0-9]/g, '')}`}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="text-xs text-emerald-300 hover:underline font-mono truncate"
+                                            >
+                                              {s.whatsapp_number}
+                                            </a>
+                                            <button
+                                              type="button"
+                                              onClick={() => handleCopy(s.whatsapp_number, `whatsapp-${s.id}`)}
+                                              className="text-[11px] text-slate-400 hover:text-white px-2 py-0.5 rounded border border-slate-800 shrink-0"
+                                            >
+                                              {copiedId === `whatsapp-${s.id}` ? '✓' : 'Copy'}
                                             </button>
                                           </div>
                                         ) : (

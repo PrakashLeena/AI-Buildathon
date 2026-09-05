@@ -22,7 +22,8 @@ export default function ProjectSubmissionForm({
     demo_video: '',
     source_repo: '',
     hosted_prototype: '',
-    ai_usage_statement: ''
+    ai_usage_statement: '',
+    whatsapp_number: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -63,7 +64,6 @@ export default function ProjectSubmissionForm({
       }
       setOtpToken(data.otpToken);
       setOtpSent(true);
-      setNeedsFreshOtp(false);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -75,9 +75,9 @@ export default function ProjectSubmissionForm({
     e.preventDefault();
     setError('');
 
-    if (hasExistingSubmission && (!otp || !otpToken)) {
+    if (!otp || !otpToken) {
       setNeedsFreshOtp(true);
-      setError('Please verify with a security code before updating existing deliverables.');
+      setError('Please verify with a security code before submitting.');
       return;
     }
 
@@ -87,8 +87,8 @@ export default function ProjectSubmissionForm({
         registrationId,
         participantEmail,
         isOverwrite: hasExistingSubmission,
-        otp: hasExistingSubmission ? otp.trim() : undefined,
-        otpToken: hasExistingSubmission ? otpToken : undefined,
+        otp: otp.trim(),
+        otpToken,
         ...formData
       };
 
@@ -100,7 +100,7 @@ export default function ProjectSubmissionForm({
 
       const data = await res.json();
       if (!res.ok) {
-        if (data.error && data.error.toLowerCase().includes('otp')) {
+        if (data.otpError) {
           setNeedsFreshOtp(true);
         }
         throw new Error(data.error || 'Failed to submit project.');
@@ -154,10 +154,10 @@ export default function ProjectSubmissionForm({
           </span>
         </div>
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.2rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>
-          Submission Received!
+          Submitted!
         </h2>
         <p style={{ fontSize: '1.05rem', color: 'var(--text-secondary)', maxWidth: '560px', margin: '0 auto 2.5rem', lineHeight: 1.6 }}>
-          Thank you, <strong>{participantName}</strong>. Your final project deliverables for <strong>{teamName || 'your team'}</strong> have been saved successfully.
+          Thanks, <strong>{participantName}</strong> — <strong>{teamName || 'your team'}</strong>'s submission has been saved.
         </p>
         <div style={{ display: 'inline-flex', gap: '1rem', justifyContent: 'center' }}>
           <Link
@@ -165,7 +165,7 @@ export default function ProjectSubmissionForm({
             className="submission-submit-btn"
             style={{ textDecoration: 'none', maxWidth: '240px' }}
           >
-            Return to Home
+            Back to Home
           </Link>
         </div>
       </div>
@@ -189,7 +189,7 @@ export default function ProjectSubmissionForm({
             <span className="material-symbols-outlined">groups</span>
           </div>
           <div style={{ flex: 1 }}>
-            <span className="team-eyebrow">VERIFIED TEAM CREDENTIALS</span>
+            <span className="team-eyebrow">TEAM VERIFIED</span>
             <h3 className="team-name-title" style={{ color: 'var(--text-primary)' }}>{teamName || 'AI Buildathon Team'}</h3>
           </div>
           {onReset && (
@@ -200,20 +200,20 @@ export default function ProjectSubmissionForm({
         </div>
         <div className="team-details-grid">
           <div className="team-detail-item" style={{ background: '#f8fafc', borderColor: 'rgba(0, 0, 0, 0.06)' }}>
-            <span className="detail-label" style={{ color: 'var(--text-muted)' }}>Participant Name</span>
+            <span className="detail-label" style={{ color: 'var(--text-muted)' }}>Participant</span>
             <span className="detail-value" style={{ color: 'var(--text-primary)' }}>{participantName || 'Participant'}</span>
           </div>
           <div className="team-detail-item" style={{ background: '#f8fafc', borderColor: 'rgba(0, 0, 0, 0.06)' }}>
-            <span className="detail-label" style={{ color: 'var(--text-muted)' }}>Verified Email</span>
+            <span className="detail-label" style={{ color: 'var(--text-muted)' }}>Email</span>
             <span className="detail-value" style={{ color: 'var(--text-primary)' }}>{participantEmail}</span>
           </div>
           <div className="team-detail-item" style={{ background: '#f8fafc', borderColor: 'rgba(0, 0, 0, 0.06)' }}>
-            <span className="detail-label" style={{ color: 'var(--text-muted)' }}>Submission Status</span>
+            <span className="detail-label" style={{ color: 'var(--text-muted)' }}>Status</span>
             <span
               className="detail-value"
               style={{ color: hasExistingSubmission ? '#d97706' : '#059669' }}
             >
-              {hasExistingSubmission ? 'Existing Submission on File' : 'Ready for Submission'}
+              {hasExistingSubmission ? 'Already Submitted' : 'Ready to Submit'}
             </span>
           </div>
         </div>
@@ -230,9 +230,9 @@ export default function ProjectSubmissionForm({
         >
           <span className="material-symbols-outlined notice-icon" style={{ color: '#d97706' }}>info</span>
           <div>
-            <strong style={{ color: '#92400e' }}>Existing Submission Detected</strong>
+            <strong style={{ color: '#92400e' }}>You've already submitted</strong>
             <p style={{ margin: 0, marginTop: '0.2rem', color: '#b45309' }}>
-              Your team already has a submission recorded. Submitting this form will update and overwrite your deliverables with the new information below.
+              Saving again will replace your previous answers.
             </p>
           </div>
         </div>
@@ -262,8 +262,8 @@ export default function ProjectSubmissionForm({
           <div className="submission-step-header">
             <div className="submission-step-num">1</div>
             <div className="submission-step-info">
-              <h4 style={{ color: 'var(--text-primary)' }}>Section 1: Project Brief</h4>
-              <p style={{ color: 'var(--text-secondary)' }}>Describe the core problem, solution, AI integration, and project roadmap.</p>
+              <h4 style={{ color: 'var(--text-primary)' }}>Project Brief</h4>
+              <p style={{ color: 'var(--text-secondary)' }}>Tell us about the problem, your solution, and what's next.</p>
             </div>
           </div>
 
@@ -281,7 +281,7 @@ export default function ProjectSubmissionForm({
                   onChange={handleInputChange}
                   className="submission-textarea"
                   style={inputStyle}
-                  placeholder="Describe the core problem your project addresses..."
+                  placeholder="What problem does your project solve?"
                 />
               </div>
             </div>
@@ -299,15 +299,16 @@ export default function ProjectSubmissionForm({
                   onChange={handleInputChange}
                   className="submission-textarea"
                   style={inputStyle}
-                  placeholder="Explain how your working solution solves the problem..."
+                  placeholder="How does your solution solve it?"
                 />
               </div>
             </div>
 
             <div className="submission-field full-width">
               <label className="submission-field-label" style={{ color: 'var(--text-primary)' }}>
-                AI usage <span className="req-star">*</span>
+                AI Features in Your Product <span className="req-star">*</span>
               </label>
+              <p className="submission-field-desc">What does AI actually do for your users? (e.g. an LLM answers questions, a model detects fraud, computer vision reads a document)</p>
               <div className="submission-textarea-wrapper">
                 <textarea
                   required
@@ -317,7 +318,7 @@ export default function ProjectSubmissionForm({
                   onChange={handleInputChange}
                   className="submission-textarea"
                   style={inputStyle}
-                  placeholder="Describe how AI was utilized in the general scope of this project..."
+                  placeholder="e.g. Our app uses an LLM to auto-generate meeting summaries from uploaded audio"
                 />
               </div>
             </div>
@@ -335,7 +336,7 @@ export default function ProjectSubmissionForm({
                   onChange={handleInputChange}
                   className="submission-textarea"
                   style={inputStyle}
-                  placeholder="Detail your technical architecture, frameworks, and tools used..."
+                  placeholder="Stack, architecture, and tools you used"
                 />
               </div>
             </div>
@@ -353,7 +354,7 @@ export default function ProjectSubmissionForm({
                   onChange={handleInputChange}
                   className="submission-textarea"
                   style={inputStyle}
-                  placeholder="What is the measurable or expected impact of this solution?..."
+                  placeholder="What impact does this have?"
                 />
               </div>
             </div>
@@ -371,7 +372,7 @@ export default function ProjectSubmissionForm({
                   onChange={handleInputChange}
                   className="submission-textarea"
                   style={inputStyle}
-                  placeholder="Outline future plans, milestones, and next steps..."
+                  placeholder="What's next for this project?"
                 />
               </div>
             </div>
@@ -383,8 +384,8 @@ export default function ProjectSubmissionForm({
           <div className="submission-step-header">
             <div className="submission-step-num">2</div>
             <div className="submission-step-info">
-              <h4 style={{ color: 'var(--text-primary)' }}>Section 2: Deliverables & Statements</h4>
-              <p style={{ color: 'var(--text-secondary)' }}>Provide verified URLs for your demo video, repository, and prototype.</p>
+              <h4 style={{ color: 'var(--text-primary)' }}>Links & Statement</h4>
+              <p style={{ color: 'var(--text-secondary)' }}>Share the links judges need to review your work.</p>
             </div>
           </div>
 
@@ -393,6 +394,7 @@ export default function ProjectSubmissionForm({
               <label className="submission-field-label" style={{ color: 'var(--text-primary)' }}>
                 Demo Video <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'normal', marginLeft: '0.35rem' }}>(Optional)</span>
               </label>
+              <p className="submission-field-desc">Unlisted YouTube link, 3 minutes max.</p>
               <div className="submission-input-wrapper">
                 <span className="material-symbols-outlined input-icon">smart_display</span>
                 <input
@@ -402,7 +404,7 @@ export default function ProjectSubmissionForm({
                   onChange={handleInputChange}
                   className="submission-input"
                   style={{ ...inputStyle, paddingLeft: '2.75rem' }}
-                  placeholder="Enter unlisted YouTube video URL (Max 3 mins showcasing a walkthrough, optional)"
+                  placeholder="https://youtube.com/watch?v=..."
                 />
               </div>
             </div>
@@ -411,6 +413,7 @@ export default function ProjectSubmissionForm({
               <label className="submission-field-label" style={{ color: 'var(--text-primary)' }}>
                 Source Repository <span className="req-star">*</span>
               </label>
+              <p className="submission-field-desc">Public GitHub or GitLab repo with your code and setup steps.</p>
               <div className="submission-input-wrapper">
                 <span className="material-symbols-outlined input-icon">code</span>
                 <input
@@ -421,7 +424,7 @@ export default function ProjectSubmissionForm({
                   onChange={handleInputChange}
                   className="submission-input"
                   style={{ ...inputStyle, paddingLeft: '2.75rem' }}
-                  placeholder="Enter public GitHub or GitLab URL containing source code, README, and setup instructions"
+                  placeholder="https://github.com/your-team/project"
                 />
               </div>
             </div>
@@ -430,6 +433,7 @@ export default function ProjectSubmissionForm({
               <label className="submission-field-label" style={{ color: 'var(--text-primary)' }}>
                 Hosted Prototype <span className="req-star">*</span>
               </label>
+              <p className="submission-field-desc">Live link judges can open and try.</p>
               <div className="submission-input-wrapper">
                 <span className="material-symbols-outlined input-icon">open_in_browser</span>
                 <input
@@ -440,15 +444,36 @@ export default function ProjectSubmissionForm({
                   onChange={handleInputChange}
                   className="submission-input"
                   style={{ ...inputStyle, paddingLeft: '2.75rem' }}
-                  placeholder="Enter live URL for judges to try and evaluate your solution"
+                  placeholder="https://your-project.vercel.app"
                 />
               </div>
             </div>
 
             <div className="submission-field full-width">
               <label className="submission-field-label" style={{ color: 'var(--text-primary)' }}>
-                AI Usage Statement <span className="req-star">*</span>
+                WhatsApp Number <span className="req-star">*</span>
               </label>
+              <p className="submission-field-desc">So we can reach you about judging logistics or results.</p>
+              <div className="submission-input-wrapper">
+                <span className="material-symbols-outlined input-icon">chat</span>
+                <input
+                  required
+                  type="tel"
+                  name="whatsapp_number"
+                  value={formData.whatsapp_number}
+                  onChange={handleInputChange}
+                  className="submission-input"
+                  style={{ ...inputStyle, paddingLeft: '2.75rem' }}
+                  placeholder="+94 71 234 5678"
+                />
+              </div>
+            </div>
+
+            <div className="submission-field full-width">
+              <label className="submission-field-label" style={{ color: 'var(--text-primary)' }}>
+                Qoder Usage Statement <span className="req-star">*</span>
+              </label>
+              <p className="submission-field-desc">Describe how Qoder helped you build this project, start to finish — and how was the experience using it?</p>
               <div className="submission-textarea-wrapper">
                 <textarea
                   required
@@ -458,7 +483,7 @@ export default function ProjectSubmissionForm({
                   onChange={handleInputChange}
                   className="submission-textarea"
                   style={inputStyle}
-                  placeholder="Briefly describe how Qoder was specifically used during the development of your solution"
+                  placeholder="e.g. Used Qoder to scaffold the project, build the frontend and backend, and debug deployment issues. It was fast for boilerplate, occasionally needed re-prompting for edge cases."
                 />
               </div>
             </div>
@@ -471,8 +496,8 @@ export default function ProjectSubmissionForm({
             <div className="submission-step-header">
               <div className="submission-step-num" style={{ background: '#f59e0b' }}>3</div>
               <div className="submission-step-info">
-                <h4 style={{ color: 'var(--text-primary)' }}>Session Refresh Required</h4>
-                <p style={{ color: 'var(--text-secondary)' }}>Your verification token expired while completing the form. Request a fresh code to submit.</p>
+                <h4 style={{ color: 'var(--text-primary)' }}>Session Expired</h4>
+                <p style={{ color: 'var(--text-secondary)' }}>Verify your email again to finish submitting.</p>
               </div>
             </div>
 
@@ -482,7 +507,7 @@ export default function ProjectSubmissionForm({
                   <Turnstile onVerify={(token) => setCaptchaToken(token)} />
                   <button type="button" onClick={handleSendFreshOtp} disabled={loading || !captchaToken} className="btn-send-otp">
                     <span className="material-symbols-outlined">send</span>
-                    {loading ? 'Sending Code...' : 'Send Fresh Verification Code'}
+                    {loading ? 'Sending...' : 'Send New Code'}
                   </button>
                 </div>
               ) : (
@@ -513,24 +538,19 @@ export default function ProjectSubmissionForm({
             className="submission-submit-btn"
           >
             {loading ? (
-              <>Processing Deliverables...</>
+              <>Submitting...</>
             ) : hasExistingSubmission ? (
               <>
-                Update & Overwrite Submission
+                Update Submission
                 <span className="material-symbols-outlined">published_with_changes</span>
               </>
             ) : (
               <>
-                Submit Final Project
+                Submit Project
                 <span className="material-symbols-outlined">arrow_forward</span>
               </>
             )}
           </button>
-
-          <div className="submission-guarantee" style={{ color: 'var(--text-secondary)' }}>
-            <span className="material-symbols-outlined" style={{ color: 'var(--primary-orange)' }}>verified</span>
-            <span>All deliverables will be securely timestamped and provided to the evaluation panel.</span>
-          </div>
         </div>
       </form>
     </div>

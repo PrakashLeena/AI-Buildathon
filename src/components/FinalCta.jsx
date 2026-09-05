@@ -3,10 +3,12 @@ import Link from "next/link";
 import useCountdown from "../hooks/useCountdown.js";
 import { usePortalModal } from "../context/PortalModalContext.jsx";
 import { REGISTRATION_CUTOFF_DATE } from "../lib/registrationDeadline.js";
+import { SUBMISSION_CUTOFF_DATE } from "../lib/submissionDeadline.js";
 
 export default function FinalCta() {
   const { openModal } = usePortalModal();
   const countdown = useCountdown(REGISTRATION_CUTOFF_DATE);
+  const submissionCountdown = useCountdown(SUBMISSION_CUTOFF_DATE);
 
   return (
     <section className="final-cta" id="submission" aria-labelledby="final-cta-title">
@@ -38,10 +40,10 @@ export default function FinalCta() {
         ) : (
           <Link
             href="/submit-project"
-            className="final-cta-button"
+            className="final-cta-button final-cta-button-outline"
             style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
           >
-            Go to Final Project Submission Portal{" "}
+            Go to Submission Portal{" "}
             <span className="material-symbols-outlined" aria-hidden="true">
               arrow_forward
             </span>
@@ -52,10 +54,22 @@ export default function FinalCta() {
           Questions? Contact us <span aria-hidden="true">→</span>
         </a>
 
-        <p className="final-cta-deadline">
-          <strong>Final Submissions Open</strong>
-          <span>Open to all registered participants of the AI Buildathon.</span>
-        </p>
+        {!submissionCountdown.closed ? (
+          <div className="final-cta-countdown">
+            <strong>Submission Deadline</strong>
+            <div className="final-cta-countdown-grid">
+              <span><b>{submissionCountdown.days}</b>d</span>
+              <span><b>{submissionCountdown.hours}</b>h</span>
+              <span><b>{submissionCountdown.minutes}</b>m</span>
+              <span><b>{submissionCountdown.seconds}</b>s</span>
+            </div>
+          </div>
+        ) : (
+          <p className="final-cta-deadline">
+            <strong>Submissions Closed</strong>
+            <span>The project submission window has closed.</span>
+          </p>
+        )}
       </div>
     </section>
   );

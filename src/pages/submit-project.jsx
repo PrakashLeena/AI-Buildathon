@@ -124,7 +124,11 @@ export default function SubmitProjectPage() {
         />
       </Head>
 
-      {/* Whole-page vibrant orange cyber background */}
+      {/* Whole-page dark-orange cyber background. Deliberately no hero-bg.png
+          layer and a lighter grid overlay than other pages - that image plus
+          the full-strength grid were what made the header text hard to read
+          here; the plain gradient underneath already reads as rich dark
+          orange without them. */}
       <div
         style={{
           position: 'fixed',
@@ -138,8 +142,7 @@ export default function SubmitProjectPage() {
             radial-gradient(circle at 50% 12%, rgba(255, 85, 0, 0.45) 0%, transparent 60%),
             radial-gradient(circle at 10% 45%, rgba(255, 120, 0, 0.3) 0%, transparent 50%),
             radial-gradient(circle at 90% 70%, rgba(255, 85, 0, 0.35) 0%, transparent 55%),
-            radial-gradient(circle at 50% 95%, rgba(255, 85, 0, 0.4) 0%, transparent 60%),
-            url('/assets/hero-bg.png')
+            radial-gradient(circle at 50% 95%, rgba(255, 85, 0, 0.4) 0%, transparent 60%)
           `,
           backgroundSize: 'cover',
           backgroundPosition: 'center top',
@@ -155,7 +158,7 @@ export default function SubmitProjectPage() {
           width: '100%',
           height: '100%',
           zIndex: -2,
-          opacity: 0.7,
+          opacity: 0.35,
           pointerEvents: 'none',
         }}
       />
@@ -174,7 +177,7 @@ export default function SubmitProjectPage() {
                 Final Project Submission Portal
               </h1>
               <p className="submission-subtitle" style={{ color: '#e2e8f0' }}>
-                Welcome to the final submission phase. Verify your registered team email with an OTP code to access the deliverables submission form.
+                Verify your registered email to submit your team's final deliverables.
               </p>
             </div>
 
@@ -212,12 +215,12 @@ export default function SubmitProjectPage() {
                     </span>
                   </div>
                   <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.4rem' }}>
-                    Verify Team Registration
+                    {step === 'email' ? 'Verify Your Team' : 'Check Your Email'}
                   </h2>
                   <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
                     {step === 'email'
-                      ? 'Enter your registered team email to receive a 6-digit verification code.'
-                      : `A 6-digit code has been sent to ${email}. Enter it below to unlock the portal.`}
+                      ? "Enter your registered email and we'll send you a 6-digit code."
+                      : `We sent a 6-digit code to ${email}.`}
                   </p>
                 </div>
 
@@ -232,7 +235,7 @@ export default function SubmitProjectPage() {
                   <form onSubmit={handleSendOtp}>
                     <div className="submission-field full-width" style={{ marginBottom: '1.5rem' }}>
                       <label htmlFor="email" className="submission-field-label" style={{ color: 'var(--text-primary)' }}>
-                        Registered Email Address <span className="req-star">*</span>
+                        Email Address <span className="req-star">*</span>
                       </label>
                       <div className="submission-input-wrapper">
                         <span className="material-symbols-outlined input-icon">mail</span>
@@ -266,10 +269,10 @@ export default function SubmitProjectPage() {
                         style={{ width: '100%', maxWidth: '100%' }}
                       >
                         {loading ? (
-                          <>Sending Code...</>
+                          <>Sending...</>
                         ) : (
                           <>
-                            Send Verification Code
+                            Send Code
                             <span className="material-symbols-outlined">send</span>
                           </>
                         )}
@@ -297,7 +300,7 @@ export default function SubmitProjectPage() {
 
                     <div className="submission-field full-width" style={{ marginBottom: '1.75rem' }}>
                       <label htmlFor="otp" className="submission-field-label" style={{ color: 'var(--text-primary)' }}>
-                        Enter 6-Digit Verification Code <span className="req-star">*</span>
+                        Verification Code <span className="req-star">*</span>
                       </label>
                       <div className="submission-input-wrapper">
                         <span className="material-symbols-outlined input-icon">key</span>
@@ -326,7 +329,7 @@ export default function SubmitProjectPage() {
                       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
                         {resendCooldown > 0 ? (
                           <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                            Resend code in {resendCooldown}s
+                            Resend in {resendCooldown}s
                           </span>
                         ) : (
                           <button
@@ -335,7 +338,7 @@ export default function SubmitProjectPage() {
                             disabled={loading}
                             style={{ background: 'transparent', border: 'none', color: 'var(--primary-orange)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'underline' }}
                           >
-                            Resend verification code
+                            Resend code
                           </button>
                         )}
                       </div>
@@ -349,10 +352,10 @@ export default function SubmitProjectPage() {
                         style={{ width: '100%', maxWidth: '100%' }}
                       >
                         {loading ? (
-                          <>Verifying Code...</>
+                          <>Verifying...</>
                         ) : (
                           <>
-                            Verify & Access Portal
+                            Verify
                             <span className="material-symbols-outlined">arrow_forward</span>
                           </>
                         )}

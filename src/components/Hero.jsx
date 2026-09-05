@@ -194,7 +194,7 @@ export default function Hero() {
             className="btn-primary"
             style={{ cursor: "pointer", position: "relative", zIndex: 10, textDecoration: "none" }}
           >
-            Go to Final Project Submission Portal{" "}
+            Go to Submission Portal{" "}
             <span className="material-symbols-outlined" aria-hidden="true">
               arrow_forward
             </span>

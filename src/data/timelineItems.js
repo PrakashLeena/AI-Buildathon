@@ -27,7 +27,7 @@ export const timelineItems = [
   },
   {
     phase: '04',
-    date: 'September 2, 2026',
+    date: 'September 5, 2026, 11:59 PM',
     title: 'Submission Deadline',
     details: [
       'Build models, compile source repository, and submit walkthrough demo video',

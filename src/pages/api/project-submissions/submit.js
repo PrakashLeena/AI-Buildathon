@@ -36,26 +36,29 @@ export default async function handler(req, res) {
     demo_video,
     source_repo,
     hosted_prototype,
-    ai_usage_statement
+    ai_usage_statement,
+    whatsapp_number
   } = req.body || {};
 
   if (!registrationId || !participantEmail) {
     return res.status(400).json({ error: 'Missing registration details. Please verify your email again.' });
   }
 
-  // Validate OTP if it is an overwrite
-  if (isOverwrite) {
-    if (!otp || typeof otp !== 'string' || !/^\d{6}$/.test(otp.trim())) {
-      return res.status(400).json({ error: 'Please enter the 6-digit OTP received by email.' });
-    }
-    if (!otpToken || typeof otpToken !== 'string') {
-      return res.status(400).json({ error: 'Please request an email verification code first.' });
-    }
+  // Every submission (new or overwrite) must carry a valid, unexpired OTP
+  // proving the caller actually completed email verification. This used to
+  // only be checked on overwrite, which let anyone who knew a team's
+  // registrationId POST a first-time submission for that team with no
+  // verification at all.
+  if (!otp || typeof otp !== 'string' || !/^\d{6}$/.test(otp.trim())) {
+    return res.status(400).json({ error: 'Please verify your email again before submitting.', otpError: true });
+  }
+  if (!otpToken || typeof otpToken !== 'string') {
+    return res.status(400).json({ error: 'Please verify your email again before submitting.', otpError: true });
+  }
 
-    const otpCheck = verifyOtpToken(otpToken, participantEmail.toLowerCase(), otp.trim());
-    if (!otpCheck.valid) {
-      return res.status(400).json({ error: otpCheck.error || 'Invalid or expired OTP code.' });
-    }
+  const otpCheck = verifyOtpToken(otpToken, participantEmail.toLowerCase(), otp.trim());
+  if (!otpCheck.valid) {
+    return res.status(400).json({ error: otpCheck.error || 'Invalid or expired verification code.', otpError: true });
   }
 
   // Basic validation for required fields (demo_video is optional; all other fields are compulsory)
@@ -68,7 +71,8 @@ export default async function handler(req, res) {
     roadmap,
     source_repo,
     hosted_prototype,
-    ai_usage_statement
+    ai_usage_statement,
+    whatsapp_number
   };
   for (const [key, value] of Object.entries(requiredFields)) {
     if (!value || typeof value !== 'string' || !value.trim()) {
@@ -81,6 +85,32 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Confirm the verified email actually belongs to the team behind
+    // registrationId - otherwise a valid OTP for YOUR OWN email plus a
+    // guessed/leaked registrationId for someone else's team would be enough
+    // to write into their submission slot.
+    const { data: regRow, error: regLookupError } = await supabaseAdmin
+      .from('registrations')
+      .select('id, student_email, members')
+      .eq('id', registrationId)
+      .maybeSingle();
+
+    if (regLookupError) {
+      console.error('[api/project-submissions/submit] registration lookup error:', regLookupError.message);
+      return res.status(500).json({ error: 'Could not verify registration. Please try again.' });
+    }
+
+    const emailLower = participantEmail.trim().toLowerCase();
+    const regMembers = Array.isArray(regRow?.members) ? regRow.members : [];
+    const belongsToTeam =
+      !!regRow &&
+      (String(regRow.student_email || '').trim().toLowerCase() === emailLower ||
+        regMembers.some((m) => String(m?.email || '').trim().toLowerCase() === emailLower));
+
+    if (!belongsToTeam) {
+      return res.status(403).json({ error: 'This email is not associated with the given team registration.' });
+    }
+
     const payload = {
       registration_id: registrationId,
       participant_email: participantEmail,
@@ -94,6 +124,7 @@ export default async function handler(req, res) {
       source_repo: source_repo.trim(),
       hosted_prototype: hosted_prototype.trim(),
       ai_usage_statement: ai_usage_statement.trim(),
+      whatsapp_number: whatsapp_number.trim(),
       updated_at: new Date().toISOString()
     };
 

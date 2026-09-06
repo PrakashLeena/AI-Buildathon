@@ -5,7 +5,7 @@ import useCountdown from "../hooks/useCountdown.js";
 import { usePortalModal } from "../context/PortalModalContext.jsx";
 
 import { REGISTRATION_CUTOFF_DATE } from "../lib/registrationDeadline.js";
-import { SUBMISSION_CUTOFF_DATE } from "../lib/submissionDeadline.js";
+import { SUBMISSION_CUTOFF_DATE, SUBMISSION_PORTAL_ENABLED } from "../lib/submissionDeadline.js";
 
 export default function Hero() {
   const canvasRef = useRef(null);
@@ -188,7 +188,7 @@ export default function Hero() {
               arrow_forward
             </span>
           </a>
-        ) : (
+        ) : SUBMISSION_PORTAL_ENABLED ? (
           <Link
             href="/submit-project"
             className="btn-primary"
@@ -199,12 +199,13 @@ export default function Hero() {
               arrow_forward
             </span>
           </Link>
-        )}
+        ) : null}
         <a href="#about" className="btn-secondary">
           Explore More
         </a>
       </div>
 
+      {(!countdown.closed || (SUBMISSION_PORTAL_ENABLED && !submissionCountdown.closed)) && (
       <div
         className="countdown-container"
         style={{ position: "relative", zIndex: 2 }}
@@ -241,7 +242,7 @@ export default function Hero() {
               </div>
             </div>
           </>
-        ) : !submissionCountdown.closed ? (
+        ) : SUBMISSION_PORTAL_ENABLED && !submissionCountdown.closed ? (
           <>
             <div className="countdown-title">
               Project Submission Deadline Countdown
@@ -273,22 +274,9 @@ export default function Hero() {
               </div>
             </div>
           </>
-        ) : (
-          <>
-            <div className="countdown-title">Submissions Closed</div>
-            <div
-              style={{
-                fontSize: "1.1rem",
-                fontWeight: 600,
-                color: "var(--primary-orange)",
-                marginTop: "0.5rem",
-              }}
-            >
-              The project submission window has closed.
-            </div>
-          </>
-        )}
+        ) : null}
       </div>
+      )}
     </section>
   );
 }

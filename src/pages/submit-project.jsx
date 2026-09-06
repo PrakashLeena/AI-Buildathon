@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Turnstile from '../components/Turnstile';
 import ProjectSubmissionForm from '../components/ProjectSubmissionForm';
+import { SUBMISSION_PORTAL_ENABLED } from '../lib/submissionDeadline.js';
 
 const SUBMISSION_SESSION_KEY = 'ai_buildathon_submission_session';
 const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
@@ -146,6 +147,39 @@ export default function SubmitProjectPage() {
     setError('');
     turnstileRef.current?.reset();
   };
+
+  if (!SUBMISSION_PORTAL_ENABLED) {
+    return (
+      <>
+        <Head>
+          <title>Submission Portal Unavailable | AI Buildathon</title>
+        </Head>
+        <Header />
+        <main
+          style={{
+            paddingTop: '10rem',
+            paddingBottom: '8rem',
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            padding: '10rem var(--site-gutter) 8rem',
+          }}
+        >
+          <div>
+            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', marginBottom: '1rem' }}>
+              Submission Portal Unavailable
+            </h1>
+            <p style={{ color: 'var(--text-secondary)', maxWidth: 480, margin: '0 auto' }}>
+              The Final Project Submission Portal is not open right now. Please check back later.
+            </p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>

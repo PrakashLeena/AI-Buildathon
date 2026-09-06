@@ -10,6 +10,7 @@ import FinalCta from '../components/FinalCta.jsx';
 import Footer from '../components/Footer.jsx';
 import RegisterModal from '../components/RegisterModal.jsx';
 import { PortalModalProvider } from '../context/PortalModalContext.jsx';
+import { SUBMISSION_PORTAL_ENABLED } from '../lib/submissionDeadline.js';
 import useLenisSmoothScroll from '../hooks/useLenisSmoothScroll.js';
 import useRevealOnScroll from '../hooks/useRevealOnScroll.js';
 
@@ -37,7 +38,7 @@ export default function Home() {
       <Toolkit />
       <Timeline techContainerRef={techContainerRef} />
       <Prizes />
-      <FinalCta />
+      {SUBMISSION_PORTAL_ENABLED && <FinalCta />}
       <RegisterModal />
       <Footer />
     </PortalModalProvider>

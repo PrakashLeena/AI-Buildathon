@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import useHeaderScroll from '../hooks/useHeaderScroll.js';
+import { SUBMISSION_PORTAL_ENABLED } from '../lib/submissionDeadline.js';
 
 export default function Header() {
   const scrolled = useHeaderScroll();
@@ -43,9 +44,11 @@ export default function Header() {
         <li>
           <a href="#prizes" onClick={() => setMenuOpen(false)}>Prizes</a>
         </li>
-        <li>
-          <Link href="/submit-project" onClick={() => setMenuOpen(false)}>Final Submission Portal</Link>
-        </li>
+        {SUBMISSION_PORTAL_ENABLED && (
+          <li>
+            <Link href="/submit-project" onClick={() => setMenuOpen(false)}>Final Submission Portal</Link>
+          </li>
+        )}
         <li>
           <a
             href="#contact"
